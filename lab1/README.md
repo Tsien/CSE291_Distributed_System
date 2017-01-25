@@ -1,141 +1,22 @@
-# Lab 1: Remote Method Invocation \(RMI\)
+#
+Lab 1: Remote Method Invocation \(RMI\)
 
 ## TODO
-* socket programming
-* java reflection()
+
+* ~~socket programming~~
+* java reflection\(\)
 * serialization
 * multithreads
-* RMI source code
-
-
-## Overview
-
-* implement a remote method invocation \(RMI\) library.
-
-## Logistics
-
-submit :
-
-* a single zip archive
-* include your modified Skeleton.java and Stub.java, and files containing any helper classes you have created.
-* Stub, Skeleton, and all helper classes must be in the package rmi.
-* Your RMI library should work on Java 7 virtual machines.
-
-## Detailed Description
-
-The RMI library has two major components:
-
-* one that simplifies the task of making servers remotely-accessible
-* and another that simplifies the writing of the corresponding clients.
-
-Note that it is important not to think of the remotely-accessible object as a “server” in the low-level\(socket programming-level\) sense. As you will soon see, a low-level TCP server is implemented in, and hidden by, the RMI library
-
-### On the Server: Skeleton
-
-* It is a multithreaded TCP server which handles all the low-level networking tasks:
-* it listens for incoming connections, accepts
-them, parses method call requests, and calls the correct methods on the server object.
-* When a method returns, the return value \(or exception\) is sent over the network to the client, and the skeleton closes the connection.
-* Note that the server object itself need not perform any network I/O — **this is all done entirely by the skeleton, within the RMI library**. The server object does not even have to be aware of the existence of any skeletons that might invoke methods on it.
-* What determines which public methods of the server object are accessible remotely?
-* The server object implements a certain kind of interface called a remote interface, which will be detailed later.
-* The remote interface lists the remotely-accessible methods of the server object. The skeleton object is created for this interface, and only forwards calls to the methods which are listed in it.
-Keywords:
-* multithreaded
-* listen for incoming connections, accepts them
-* parses method call request,
-* call the correct methods on the server object
-* send the return value(or exception) over the network
-* close the connection
-
-### On the Client: Stub
-
-* Each one appears to implement a given remote interface. However, instead of implementing the interface in a direct manner, each stub object forwards all method calls to a server by contacting a remote skeleton.
-* When the client invokes a method on a stub object, the stub opens a connection to the skeleton, and sends the method name and arguments. As described in the section on skeletons, this causes the remote
-skeleton to call the same method on the server object. When the method finishes, the skeleton transmits the result, and the stub returns this result to the caller in the client virtual machine.
-* As with the skeleton, the user of the stub need not explicitly perform any network I/O — again, this
-is done entirely by the stub object, and implemented within the RMI library.
-
-Keywords:
-
-* open a connection to skeleton
-* send method name and arguments
-* return the results to the caller in the client
-
-
-### Diagram
-
-![RMI Diagram](http://i.imgur.com/NPw4kNm.png?1)
-
-### Remote Interfaces
-
-A remote interface is simply a regular interface with the additional requirement that every method be
-marked as throwing a special exception, **RMIException**.
-
-* This is because, when using RMI, a method may fail due to a network error, a protocol incompatibility, or for other reasons that are related only to RMI and have nothing to do with the functionality of the server object. These failures are, of course, signaled by throwing RMIException.
-
-### Specification
-
-create two classes within the package rmi: Skeleton and Stub.
+* ~~RMI source code~~
 
 Skeleton:
 
-* implements a multithreaded TCP server.
-* parametrized by the remote interface for which it accepts calls
-* Each of the Skeleton constructors requires the caller to provide a reference to a server object which implements that interface.
-* The skeleton object must forward all valid call requests it receives to the server object thus specified.
-* The skeleton object must also stop gracefully in response to calls to stop, must be restartable, and must call the stopped, listen error, and service error methods in response to the appropriate events.
+1. it listens for incoming connections, accepts them, parses method call requests, and calls the correct methods on the server object.
+2. When a method returns, the return value \(or exception\) is sent over the network to the client, and the skeleton closes the connection.
 
 Stub:
-* a class factory which generates stub objects for remote interfaces. \* The class Stub itself cannot be instantiated. To repeat, it is important to note that stub objects are not instances of the Stub class, for reasons that should become clear after reading the implementation section.
-* Stubs must necessarily implement all the methods in their remote interface, and they must do this by forwarding each method call to the remote skeleton.
-* Stubs should open a single connection per method call. Arguments should be forwarded as given, and results should be returned to the caller as they were returned to the skeleton from the server.
-* If the remote method raises an exception, the stub must raise
-the same exception, with the same fields and the same stack trace.
-* The stub may additionally raise RMIException if an RMI error occurs while making the method call.
-* Stubs must also additionally implement the methods equals, hashCode, and toString.
-* Two stubs are considered equal if they implement the same remote interface and connect to the same skeleton.
-* The equals and hashCode methods must respect this requirement. The toString method should report the name of the remote interface implemented by the stub, and the remote address \(including hostname and port\) of the skeleton to which the stub connects.
-* Stubs must also be serializable.
 
-All the constructors of Skeleton and all versions of Stub.create must reject interfaces which are not remote interfaces.
-
-### Implementation
-
-Skeleton must be able to call any method in any remote interface.
-Stub must solve an even greater challenge: it must be capable of generating stub objects that implement any remote interface at run-time. You will need to use **Java Reflection** in order to achieve
-this level of flexibility. To start, consult the documentation for the Class and Method classes. Also see **InvocationTargetException**.
-
-The generation of stubs that implement arbitrary remote interfaces at run-time is done by creating proxy objects \(**class Proxy**\). Every proxy object has a reference to an invocation handler \(class **InvocationHandler**\), whose **invoke** method is called whenever a method is called on the proxy object.
-
-The RMI library’s stub objects will therefore be proxy objects, and the marshalling of arguments will be done in their invocation handlers. Please refer to the documentation of these classes.
-
-transmit arguments:
-
-* using Java’s native serialization facility
-* the classes ObjectInputStream and ObjectOutputStream.
-
-Helper classes:
-
-* put them in the RMI package
-* make them package-private
-
-### Testing: Local
-
-* conformance/ subdirectory : only access the public interface
-* unit/ subdirectory : test package-private classes and method
-* Run make test to run all tests. For detailed documentation on how to use the test library and write your own tests, run make docs-all and read the documentation for the package test in the Javadoc generated in the javadoc-all/ subdirectory. The Test and Series classes are of particular interest. You should also look at the some of the tests distributed with the starter code as examples.
-
-### Testing: Docker
-
-* Write a PingPongClient and a PingPongServer.
-
-### Notes and Tips
-
-* If you are creating both an ObjectInputStream and an ObjectOutputStream on two sides of a connection, you must ensure that the output stream is created first, and you must flush it before creating the input stream.
-* handle invalid arguments \(for example, null\),
-* Note that the skeleton is multithreaded, so server objects must be thread-safe.
-
+1. marshal parameters
 
 ## Reference
 
@@ -152,7 +33,10 @@ PPT notes:
 * accept
 * read/write
 * send/receive
+
 ![TCP Sockets](http://i.imgur.com/dhDLqSn.png)
+
+![workflow](http://csis.pace.edu/~marchese/CS865/Lectures/Liu7/LIU7_files/image022.jpg)
 
 * implement generic interfaces
 * use Java reflection
@@ -179,6 +63,7 @@ Overview:
 * the remote stub implements the same set of remote interfaces that the remote object implements.
 
 RMI server:
+
 * Each interface contains a single method.
 * two interfaces : one for remote access, another for starting work
 * For an object to be considered serializable, its class must implement the java.io.Serializable marker interface.
@@ -194,8 +79,8 @@ RMI server:
 * Before a client can invoke a method on a remote object, it must first obtain a reference to the remote object.
 * The system provides a particular type of remote object, the RMI registry, for finding references to other remote objects. The RMI registry is a simple remote object naming service that enables clients to obtain a reference to a remote object by name.
 
-
 Client Program:
+
 * Like the ComputeEngine server, the client begins by installing a security manager. This step is necessary because the process of receiving the server remote object's stub could require downloading class definitions from the server.
 * Note that all serializable classes, whether they implement the Serializable interface directly or indirectly, must declare a private static final field named serialVersionUID to guarantee serialization compatibility between versions.
 
@@ -203,15 +88,139 @@ Client Program:
 
 [Socket Programming](http://www.buyya.com/java/Chapter13.pdf)
 
+* Sockets provide an interface for programming networks at the transport layer.
+* Network communication using Sockets is very much similar to performing file I/O.
+* Socket-based communication is independent of a programming language used for implementing it.
+* After connection, the server needs a new socket so that it can continue to listen to the original socket for connection requests while serving the connected client.
+* ServerSocket : listen for client requests
+
+The steps for creating a simple server program are:
+
+1. Open the Server Socket:
+```
+ServerSocket server = new ServerSocket( PORT );
+```
+2. Wait for the Client Request:
+```
+Socket client = server.accept();
+```
+3. Create I/O streams for communicating to the client:
+```
+DataInputStream is = new DataInputStream(client.getInputStream());
+DataOutputStream os = new DataOutputStream(client.getOutputStream());
+```
+4. Perform communication with client
+```
+Receive from client: String line = is.readLine();
+Send to client: os.writeBytes(“Hello\n”);
+```
+5. Close socket:
+```
+client.close();
+```
+
+The steps for creating a simple client program are:
+
+1. Create a Socket Object:
+```
+Socket client = new Socket(server, port_id);
+```
+2. Create I/O streams for communicating with the server.
+```
+is = new DataInputStream(client.getInputStream());
+os = new DataOutputStream(client.getOutputStream());
+```
+3. Perform I/O or communication with the server:
+```
+Receive data from the server: String line = is.readLine();
+Send data to the server: os.writeBytes(“Hello\n”);
+```
+4. Close the socket when done:
+```
+client.close();
+```
+
 ---
 
 [RMI System Overview](https://docs.oracle.com/javase/7/docs/platform/rmi/spec/rmi-arch.html)
+
+When a stub's method is invoked, it does the following:
+
+* initiates a connection with the remote JVM containing the remote object,
+* marshals \(writes and transmits\) the parameters to the remote JVM,
+* waits for the result of the method invocation,
+* unmarshals \(reads\) the return value or exception returned, and
+* returns the value to the caller.
+
+The stub hides the serialization of parameters and the network-level communication in order to present a simple invocation mechanism to the caller.
+
+Each remote object may have a corresponding skeleton. The skeleton is responsible for dispatching the call to the actual remote object implementation. When a skeleton receives an incoming method invocation it does the following:
+
+* unmarshals \(reads\) the parameters for the remote method,
+* invokes the method on the actual remote object implementation, and
+* marshals \(writes and transmits\) the result \(return value or exception\) to the caller.
+
+Garbage Collection of Remote Objects:
+
+* it is desirable to automatically delete those remote objects that are no longer referenced by any client.
+
+Dynamic Class Loading:
+
+* When parameters and return values for a remote method invocation are unmarshalled to become live objects in the receiving JVM, class definitions are required for all of the types of objects in the stream. The unmarshalling process first attempts to resolve classes by name in its local class loading context \(the context class loader of the current thread\). RMI also provides a facility for dynamically loading the class definitions for the actual types of objects passed as parameters and return values for remote method invocations from network locations specified by the transmitting endpoint. This includes the dynamic downloading of remote stub classes corresponding to particular remote object implementation classes \(and used to contain remote references\) as well as any other type that is passed by value in RMI calls, such as the subclass of a declared parameter type, that is not already available in the class loading context of the unmarshalling side.
+
+---
+
+[Java - Multithreading](https://www.tutorialspoint.com/java/java_multithreading.htm)
+
+Create a Thread by Implementing a Runnable Interface:
+1. implement a run\(\) method provided by a Runnable interface.
+2. instantiate a Thread object
+3. call start\(\) method, which executes a call to run\( \) method.
+
+Create a Thread by Extending a Thread Class:
+1. override run\( \) method available in Thread class.
+2. Once Thread object is created, you can start it by calling start\(\) method, which executes a call to run\( \) method.
+
+Java - Thread Synchronization:
+
+* Each object in Java is associated with a monitor, which a thread can lock or unlock. Only one thread at a time may hold a lock on a monitor.
+
+---
+
+[Concurrency](http://docs.oracle.com/javase/tutorial/essential/concurrency/index.html)
+
+* Thread.sleep causes the current thread to suspend execution for a specified period.
+* The join method allows one thread to wait for the completion of another.
+
+Synchronization:
+
+* Synchronized Methods:
+* When one thread is executing a synchronized method for an object, all other threads that invoke synchronized methods for the same object block \(suspend execution\) until the first thread is done with the object.
+* when a synchronized method exits, it automatically establishes a happens-before relationship with any subsequent invocation of a synchronized method for the same object.
+* Intrinsic Locks and Synchronization:
+* Every object has an intrinsic lock associated with it.
+
+---
+
+[Java Multithreading](https://www.udemy.com/java-multithreading/learn/v4/content)
+
+---
+
+[Trail: The Reflection API](http://docs.oracle.com/javase/tutorial/reflect/index.html)
 
 ---
 
 [自己实现RMI（一）基本原理](http://blog.csdn.net/semillon/article/details/7916372)
 
+三个关键的技术要点：
+1. 对象的查找或者索引，以及回调方法。
+2. 对象的序列化与反序列化。
+3. 底层socket通信
+
+* 实现对象的索引: 利用Java中的map数据结构
+
 ---
+
 [Java RMI（远程方法调用）开发](http://www.cnblogs.com/lvyahui/p/5425507.html)
 
 * 将可以远程调用的对象进行序列化，然后绑定到RMI Server（被调方，运行者）中作为存根（stub）
@@ -219,12 +228,11 @@ Client Program:
 * RMI Server 接收到封装的参数，传递给桩（skeleton），由桩解析参数并且以参数调用对应的存根（）stub方法。
 * 存根方法在RMI Server执行完毕之后，返回结果将被RMI底层封装并传输给RMI Client（也就是主调方，调用者）
 
-
 ---
 
 [RMI的实现](http://computerdragon.blog.51cto.com/6235984/1178053)
 
-* 客户端有客户辅助对象(stub)，服务端游服务辅助对象(skeleton)
+* 客户端有客户辅助对象\(stub\)，服务端游服务辅助对象\(skeleton\)
 * 制作远程服务：
 1. 制作远程接口: 定义了可以供客户远程调用的方法。stub和实际服务都是实现该接口
 2. 制作远程接口的实现：真正的实际工作的服务
@@ -240,7 +248,6 @@ Client Program:
 
 [RMI网络编程开发之二 如何搭建基于JDK1.5的分布式JAVA RMI 程序](http://6221123.blog.51cto.com/6211123/1112619)
 
-
 ---
 
 [远程方法调用（RMI）原理与示例](http://www.cnblogs.com/wxisme/p/5296441.html)
@@ -248,5 +255,11 @@ Client Program:
 ---
 
 [RMI（Remote Method Invocation）原理浅析](http://blog.csdn.net/qb2049_xg/article/details/3278672)
+
+---
+
+[RMI Source Code](http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/7-b147/java/rmi/RemoteException.java?av=f)
+
+---
 
 
