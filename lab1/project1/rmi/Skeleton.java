@@ -200,7 +200,7 @@ public class Skeleton<T>
      */
     public synchronized void start() throws RMIException
     {
-    	server = new Listener(address, 10); 
+    	server = new Listener(this, 10); 
     }
 
     /** Stops the skeleton server, if it is already running.

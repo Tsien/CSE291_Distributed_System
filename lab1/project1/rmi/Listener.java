@@ -18,16 +18,19 @@ import java.util.concurrent.Executors;
  * with a fixed number of threads. The Runnable's are kept in a queue in 
  * the thread pool. When a thread in the thread pool is idle it will take 
  * a Runnable from the queue and execute it.
+ * @param <T>
  */
-public class Listener extends Thread {
+public class Listener<T> extends Thread {
 	private int             serverPort;
 	private int             poolSize;
 	private boolean         isActive;
 	private ServerSocket    serverSocket;
 	private ExecutorService threadPool;
+	Skeleton<T> localObj;
 	
-	Listener(InetSocketAddress add, int num) {
-		serverPort = add.getPort();
+	public Listener(Skeleton<T> Obj, int num) {
+		localObj = Obj;
+		serverPort = localObj.address.getPort();
 		poolSize = num;
 		threadPool = Executors.newFixedThreadPool(poolSize);
 	}
@@ -54,7 +57,7 @@ public class Listener extends Thread {
 				e.printStackTrace();
 			}
 			// for execution when a thread in the pool becomes idle.
-			this.threadPool.execute(new Worker(client));
+			this.threadPool.execute(new Worker(client, localObj));
 		}
 		
 		this.threadPool.shutdown();
