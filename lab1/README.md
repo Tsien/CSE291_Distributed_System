@@ -4,9 +4,10 @@ Lab 1: Remote Method Invocation \(RMI\)
 ## TODO
 
 * ~~socket programming~~
-* java reflection\(\)
+* java reflection
 * serialization
-* multithreads
+* proxy
+* ~~multithreads~~
 * ~~RMI source code~~
 
 Skeleton:
@@ -142,6 +143,10 @@ client.close();
 
 ---
 
+
+
+
+
 [RMI System Overview](https://docs.oracle.com/javase/7/docs/platform/rmi/spec/rmi-arch.html)
 
 When a stub's method is invoked, it does the following:
@@ -202,11 +207,71 @@ Synchronization:
 
 ---
 
+[Multithreaded Servers in Java](http://tutorials.jenkov.com/java-multithreaded-servers/index.htmls)
+
+---
+
 [Java Multithreading](https://www.udemy.com/java-multithreading/learn/v4/content)
 
 ---
 
 [Trail: The Reflection API](http://docs.oracle.com/javase/tutorial/reflect/index.html)
+
+* Reflection is used to examine or modify the runtime behavior of applications running in the JVM.
+
+#### Classes
+
+* Every object is either a reference or primitive type.
+* For every type of object, the Java virtual machine instantiates an immutable instance of **java.lang.Class** which provides methods to examine the runtime properties of the object including its members and type information.
+* **Class** also provides the ability to create new classes and objects. Most importantly, it is the entry point for all of the Reflection APIs.
+* how to retrieve Class objects?
+* Object.getClass()
+* e.g., `Class c = "foo".getClass();`
+* this only works for reference types which all inherit from Object.
+* The .class Syntax
+* when the type is available but there is no instance
+* e.g., `Class c = boolean.class;`
+* This is also the easiest way to obtain the Class for a primitive type.
+* Class.forName()
+* when the fully-qualified name of a class is available
+* e.g., `Class c = Class.forName("com.duke.MyLocaleServiceProvider");`
+* for primitive types, use : Class.getName()
+* TYPE Field for Primitive Type Wrappers
+* e.g., `Class c = Double.TYPE;`
+* Methods that Return Classes
+* Examining Class Modifiers and Types
+* Discovering Class Members
+* get*s()
+
+
+---
+
+[Java - Serialization](https://www.tutorialspoint.com/java/java_serialization.htm)
+
+* JVM independent
+* Classes **ObjectInputStream** and **ObjectOutputStream** are high-level streams that contain the methods for serializing and deserializing an object.
+* serializes an Object and sends it to the output stream:
+```
+public final void writeObject(Object x) throws IOException
+```
+* retrieves the next Object out of the stream and deserializes it:
+```
+public final Object readObject() throws IOException, ClassNotFoundException
+//The return value is Object, so you will need to cast it to its appropriate data type.
+```
+* for a class to be serialized successfully, two conditions must be met
+* The class must implement the java.io.Serializable interface.
+* All of the fields in the class must be serializable. If a field is not serializable, it must be marked **transient**.
+* If the class implements java.io.Serializable, then it is serializable; otherwise, it's not.
+
+
+
+
+
+
+
+
+
 
 ---
 
