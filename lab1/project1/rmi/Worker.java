@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * The worker processes each request from the client.
@@ -55,7 +56,7 @@ public class Worker<T> extends Thread {
 			e.printStackTrace();
 		}
 		if (request != null) {
-			Object res = runMethod(request.getMethodName(), request.getArgs(), request.getArgsClass());
+			Object res = runMethod(request.getMethodName(), request.getArgs());
 			RMIData response = new RMIData(res, null);			
 			try {
 				oStream.writeObject(response);
@@ -75,11 +76,12 @@ public class Worker<T> extends Thread {
 		
 	}	
 	
-	public Object runMethod(String methodName, Object[] args, Class<?>[] argsType) {
+	public Object runMethod(String methodName, Object[] args) {
 		// TODO how to find the right method? 
 		Object res = null;		
 		Class<?> objClass = localObj.getClass();
 		Method targetMethod = null;
+		Class<?>[] argsType = getArgsType(args);
 		try {
 			targetMethod = objClass.getDeclaredMethod(methodName, argsType);
 		} catch (NoSuchMethodException | SecurityException e1) {
@@ -95,5 +97,14 @@ public class Worker<T> extends Thread {
 			}
 		}
 		return res;
+	}
+	
+	private Class<?>[] getArgsType(Object[] args) {
+		ArrayList<Class<?>> argsType = new ArrayList<>();
+		for (Object obj : args) {
+			argsType.add(obj.getClass());
+		}
+		Class<?>[] res = new Class<?>[argsType.size()];
+		return (Class<?>[])argsType.toArray(res);
 	}
 }

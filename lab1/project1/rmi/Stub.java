@@ -1,6 +1,14 @@
 package rmi;
 
-import java.net.*;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 /** RMI stub factory.
 
@@ -17,6 +25,39 @@ import java.net.*;
  */
 public abstract class Stub
 {
+    private static class MyInvocationHandler implements InvocationHandler, Serializable {
+    	
+ 		private static final long serialVersionUID = 8636975228194099266L;
+ 		
+ 		private InetSocketAddress serverAddress;
+ 		private Class<?> myClass;
+
+ 		public MyInvocationHandler(Class<?> c, InetSocketAddress address) {
+ 			this.myClass = c;
+ 			this.serverAddress = address;
+ 		}
+		@Override
+		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			// TODO Auto-generated method stub
+			
+			Socket client = null;
+			ObjectInputStream iStream = null;
+			ObjectOutputStream oStream = null;
+			RMIData request = null;
+			RMIData response = null;
+			
+			client = new Socket(serverAddress.getHostName(), serverAddress.getPort());
+			oStream = new ObjectOutputStream(client.getOutputStream());
+			iStream = new ObjectInputStream(client.getInputStream());
+			request = new RMIData(myClass.getName(), method.getName(), args, null, null);
+			oStream.writeObject(request);
+			response = (RMIData) iStream.readObject();
+			client.close();
+			return response.getResult();
+		}
+    	
+    } 
+
     /** Creates a stub, given a skeleton with an assigned adress.
 
         <p>
@@ -108,4 +149,17 @@ public abstract class Stub
     {
         throw new UnsupportedOperationException("not implemented");
     }
+    
+    /**
+     * 
+     */
+    @SuppressWarnings("unused")
+	private static <T> T myCreate(Class<T> c, InetSocketAddress address) {
+    	@SuppressWarnings("unchecked")
+		T obj = (T)Proxy.newProxyInstance(c.getClassLoader(), 
+    			new Class<?>[] {c, Serializable.class}, 
+    			new MyInvocationHandler(c, address));
+    	return obj;
+    }
+    
 }

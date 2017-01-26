@@ -1,14 +1,15 @@
-#
-Lab 1: Remote Method Invocation \(RMI\)
+# Lab 1: Remote Method Invocation \(RMI\)
 
 ## TODO
 
 * ~~socket programming~~
-* java reflection
-* serialization
+* ~~java reflection~~
+* ~~serialization~~
 * proxy
 * ~~multithreads~~
 * ~~RMI source code~~
+* how to handle Exceptions?
+* two types of return values?
 
 Skeleton:
 
@@ -17,7 +18,7 @@ Skeleton:
 
 Stub:
 
-1. marshal parameters
+1. marshal parameters 
 
 ## Reference
 
@@ -28,21 +29,21 @@ Lecture notes:
 PPT notes:
 
 * java.net package
-* stub, skeleton, serialization
+* stub, skeleton, serialization 
 * socket programming
-* open/close socket
-* accept
-* read/write
-* send/receive
+  * open/close socket
+  * accept
+  * read/write
+  * send/receive
 
 ![TCP Sockets](http://i.imgur.com/dhDLqSn.png)
 
 ![workflow](http://csis.pace.edu/~marchese/CS865/Lectures/Liu7/LIU7_files/image022.jpg)
 
 * implement generic interfaces
-* use Java reflection
-* java.lang.reflect package
-* proxy is useful for creating stub objecst
+  * use Java reflection 
+  * java.lang.reflect package
+  * proxy is useful for creating stub objecst
 
 ---
 
@@ -50,46 +51,46 @@ PPT notes:
 
 Overview:
 
-* A typical server program creates some remote objects, makes references to these objects accessible, and waits for clients to invoke methods on these objects.
+* A typical server program creates some remote objects, makes references to these objects accessible, and waits for clients to invoke methods on these objects. 
 * A typical client program obtains a remote reference to one or more remote objects on a server and then invokes methods on them.
 * TODO:
-* Locate remote objects
-* Communicate with remote objects
-* Load class definitions for objects that are passed around
-* Dynamic Code Loading : download the definition of an object's class if the class is not defined in the receiver's Java virtual machine.
+  * Locate remote objects
+  * Communicate with remote objects
+  * Load class definitions for objects that are passed around
+* Dynamic Code Loading :  download the definition of an object's class if the class is not defined in the receiver's Java virtual machine.
 * An object becomes remote by implementing a remote interface:
-* A remote interface extends the interface java.rmi.Remote.
-* declares java.rmi.RemoteException in its throws clause
-* RMI passes a remote stub for a remote object as the remote reference.
-* the remote stub implements the same set of remote interfaces that the remote object implements.
+  * A remote interface extends the interface java.rmi.Remote.
+  * declares java.rmi.RemoteException in its throws clause
+* RMI passes a remote stub for a remote object as the remote reference. 
+* the remote stub implements the same set of remote interfaces that the remote object implements. 
 
 RMI server:
 
 * Each interface contains a single method.
 * two interfaces : one for remote access, another for starting work
-* For an object to be considered serializable, its class must implement the java.io.Serializable marker interface.
+* For an object to be considered serializable, its class must implement the java.io.Serializable marker interface. 
 * In general, a class that implements a remote interface should at least do the following:
-* Declare the remote interfaces being implemented
-* Define the constructor for each remote object
-* Provide an implementation for each remote method in the remote interfaces
+  * Declare the remote interfaces being implemented
+  * Define the constructor for each remote object
+  * Provide an implementation for each remote method in the remote interfaces
 * The rules governing how arguments and return values are passed are as follows:
-* Remote objects are essentially passed by reference. A remote object reference is a stub, which is a client-side proxy that implements the complete set of remote interfaces that the remote object implements.
-* Local objects are passed by copy, using object serialization. By default, all fields are copied except fields that are marked static or transient. Default serialization behavior can be overridden on a class-by-class basis.
+  * Remote objects are essentially passed by reference. A remote object reference is a stub, which is a client-side proxy that implements the complete set of remote interfaces that the remote object implements.
+  * Local objects are passed by copy, using object serialization. By default, all fields are copied except fields that are marked static or transient. Default serialization behavior can be overridden on a class-by-class basis.
 * The main method's first task is to create and install a security manager, which protects access to system resources from untrusted downloaded code running within the Java virtual machine.
-* The static `UnicastRemoteObject.exportObject` method exports the supplied remote object so that it can receive invocations of its remote methods from remote clients.
-* Before a client can invoke a method on a remote object, it must first obtain a reference to the remote object.
-* The system provides a particular type of remote object, the RMI registry, for finding references to other remote objects. The RMI registry is a simple remote object naming service that enables clients to obtain a reference to a remote object by name.
+* The static `UnicastRemoteObject.exportObject` method exports the supplied remote object so that it can receive invocations of its remote methods from remote clients. 
+* Before a client can invoke a method on a remote object, it must first obtain a reference to the remote object. 
+* The system provides a particular type of remote object, the RMI registry, for finding references to other remote objects. The RMI registry is a simple remote object naming service that enables clients to obtain a reference to a remote object by name. 
 
 Client Program:
 
 * Like the ComputeEngine server, the client begins by installing a security manager. This step is necessary because the process of receiving the server remote object's stub could require downloading class definitions from the server.
-* Note that all serializable classes, whether they implement the Serializable interface directly or indirectly, must declare a private static final field named serialVersionUID to guarantee serialization compatibility between versions.
+* Note that all serializable classes, whether they implement the Serializable interface directly or indirectly, must declare a private static final field named serialVersionUID to guarantee serialization compatibility between versions. 
 
 ---
 
 [Socket Programming](http://www.buyya.com/java/Chapter13.pdf)
 
-* Sockets provide an interface for programming networks at the transport layer.
+* Sockets provide an interface for programming networks at the transport layer. 
 * Network communication using Sockets is very much similar to performing file I/O.
 * Socket-based communication is independent of a programming language used for implementing it.
 * After connection, the server needs a new socket so that it can continue to listen to the original socket for connection requests while serving the connected client.
@@ -97,49 +98,49 @@ Client Program:
 
 The steps for creating a simple server program are:
 
-1. Open the Server Socket:
-```
-ServerSocket server = new ServerSocket( PORT );
-```
+1. Open the Server Socket: 
+   ```
+   ServerSocket  server = new ServerSocket( PORT );
+   ```
 2. Wait for the Client Request:
-```
-Socket client = server.accept();
-```
+   ```
+   Socket client = server.accept();
+   ```
 3. Create I/O streams for communicating to the client:
-```
-DataInputStream is = new DataInputStream(client.getInputStream());
-DataOutputStream os = new DataOutputStream(client.getOutputStream());
-```
+   ```
+   DataInputStream is = new DataInputStream(client.getInputStream());
+   DataOutputStream os = new DataOutputStream(client.getOutputStream());
+   ```
 4. Perform communication with client
-```
-Receive from client: String line = is.readLine();
-Send to client: os.writeBytes(“Hello\n”);
-```
+   ```
+   Receive from client: String line = is.readLine();
+   Send to client: os.writeBytes(“Hello\n”);
+   ```
 5. Close socket:
-```
-client.close();
-```
+   ```
+   client.close();
+   ```
 
 The steps for creating a simple client program are:
 
 1. Create a Socket Object:
-```
-Socket client = new Socket(server, port_id);
-```
+   ```
+   Socket client = new Socket(server, port_id);
+   ```
 2. Create I/O streams for communicating with the server.
-```
-is = new DataInputStream(client.getInputStream());
-os = new DataOutputStream(client.getOutputStream());
-```
+   ```
+   is = new DataInputStream(client.getInputStream());
+   os = new DataOutputStream(client.getOutputStream());
+   ```
 3. Perform I/O or communication with the server:
-```
-Receive data from the server: String line = is.readLine();
-Send data to the server: os.writeBytes(“Hello\n”);
-```
+   ```
+   Receive data from the server: String line = is.readLine();
+   Send data to the server: os.writeBytes(“Hello\n”);
+   ```
 4. Close the socket when done:
-```
-client.close();
-```
+   ```
+   client.close();
+   ```
 
 ---
 
@@ -167,7 +168,7 @@ Each remote object may have a corresponding skeleton. The skeleton is responsibl
 
 Garbage Collection of Remote Objects:
 
-* it is desirable to automatically delete those remote objects that are no longer referenced by any client.
+* it is desirable to automatically delete those remote objects that are no longer referenced by any client. 
 
 Dynamic Class Loading:
 
@@ -177,13 +178,13 @@ Dynamic Class Loading:
 
 [Java - Multithreading](https://www.tutorialspoint.com/java/java_multithreading.htm)
 
-Create a Thread by Implementing a Runnable Interface:
-1. implement a run\(\) method provided by a Runnable interface.
-2. instantiate a Thread object
+Create a Thread by Implementing a Runnable Interface:  
+1. implement a run\(\) method provided by a Runnable interface.  
+2. instantiate a Thread object  
 3. call start\(\) method, which executes a call to run\( \) method.
 
-Create a Thread by Extending a Thread Class:
-1. override run\( \) method available in Thread class.
+Create a Thread by Extending a Thread Class:  
+1. override run\( \) method available in Thread class.  
 2. Once Thread object is created, you can start it by calling start\(\) method, which executes a call to run\( \) method.
 
 Java - Thread Synchronization:
@@ -194,16 +195,16 @@ Java - Thread Synchronization:
 
 [Concurrency](http://docs.oracle.com/javase/tutorial/essential/concurrency/index.html)
 
-* Thread.sleep causes the current thread to suspend execution for a specified period.
+* Thread.sleep causes the current thread to suspend execution for a specified period. 
 * The join method allows one thread to wait for the completion of another.
 
 Synchronization:
 
 * Synchronized Methods:
-* When one thread is executing a synchronized method for an object, all other threads that invoke synchronized methods for the same object block \(suspend execution\) until the first thread is done with the object.
-* when a synchronized method exits, it automatically establishes a happens-before relationship with any subsequent invocation of a synchronized method for the same object.
+  * When one thread is executing a synchronized method for an object, all other threads that invoke synchronized methods for the same object block \(suspend execution\) until the first thread is done with the object.
+  * when a synchronized method exits, it automatically establishes a happens-before relationship with any subsequent invocation of a synchronized method for the same object. 
 * Intrinsic Locks and Synchronization:
-* Every object has an intrinsic lock associated with it.
+  * Every object has an intrinsic lock associated with it.
 
 ---
 
@@ -217,7 +218,7 @@ Synchronization:
 
 [Trail: The Reflection API](http://docs.oracle.com/javase/tutorial/reflect/index.html)
 
-* Reflection is used to examine or modify the runtime behavior of applications running in the JVM.
+* Reflection is used to examine or modify the runtime behavior of applications running in the JVM. 
 
 #### Classes
 
@@ -225,25 +226,29 @@ Synchronization:
 * For every type of object, the Java virtual machine instantiates an immutable instance of **java.lang.Class** which provides methods to examine the runtime properties of the object including its members and type information.
 * **Class** also provides the ability to create new classes and objects. Most importantly, it is the entry point for all of the Reflection APIs.
 * how to retrieve Class objects?
-* Object.getClass()
-* e.g., `Class c = "foo".getClass();`
-* this only works for reference types which all inherit from Object.
-* The .class Syntax
-* when the type is available but there is no instance
-* e.g., `Class c = boolean.class;`
-* This is also the easiest way to obtain the Class for a primitive type.
-* Class.forName()
-* when the fully-qualified name of a class is available
-* e.g., `Class c = Class.forName("com.duke.MyLocaleServiceProvider");`
-* for primitive types, use : Class.getName()
-* TYPE Field for Primitive Type Wrappers
-* e.g., `Class c = Double.TYPE;`
-* Methods that Return Classes
+   * Object.getClass()
+      * e.g., `Class c = "foo".getClass();`
+      * this only works for reference types which all inherit from Object.
+   * The .class Syntax
+      * when the type is available but there is no instance 
+      * e.g., `Class c = boolean.class;`
+      * This is also the easiest way to obtain the Class for a primitive type.
+   * Class.forName()
+      * when the fully-qualified name of a class is available
+      * e.g., `Class c = Class.forName("com.duke.MyLocaleServiceProvider");`
+      * for primitive types, use : Class.getName()
+   * TYPE Field for Primitive Type Wrappers
+      * e.g., `Class c = Double.TYPE;`
+   * Methods that Return Classes
 * Examining Class Modifiers and Types
 * Discovering Class Members
-* get*s()
+   * get*s()
 
-
+#### Members - Method
+* A method declaration includes the name, modifiers, parameters, return type, and list of throwable exceptions. The java.lang.reflect.Method class provides a way to obtain this information.
+* You can obtain the names of the formal parameters of any method or constructor with the method java.lang.reflect.Executable.getParameters.
+   * getType: Returns a Class object that identifies the declared type for the parameter.
+   * 
 ---
 
 [Java - Serialization](https://www.tutorialspoint.com/java/java_serialization.htm)
@@ -259,16 +264,32 @@ public final void writeObject(Object x) throws IOException
 public final Object readObject() throws IOException, ClassNotFoundException
 //The return value is Object, so you will need to cast it to its appropriate data type.
 ```
-* for a class to be serialized successfully, two conditions must be met
-* The class must implement the java.io.Serializable interface.
-* All of the fields in the class must be serializable. If a field is not serializable, it must be marked **transient**.
+* for a class to be serialized successfully, two conditions must be met 
+   * The class must implement the java.io.Serializable interface.
+   * All of the fields in the class must be serializable. If a field is not serializable, it must be marked **transient**.
 * If the class implements java.io.Serializable, then it is serializable; otherwise, it's not.
 
+---
+
+[Class Proxy](https://docs.oracle.com/javase/7/docs/api/java/lang/reflect/Proxy.html)
+
+* To create a proxy for some interface Foo:
+```
+Foo f = (Foo) Proxy.newProxyInstance(Foo.class.getClassLoader(),
+                                          new Class[] { Foo.class },
+                                          handler);
+```
+
+* A dynamic proxy class (simply referred to as a proxy class below) is a class that implements a list of interfaces specified at runtime when the class is created
+*  A proxy interface is such an interface that is implemented by a proxy class. A proxy instance is an instance of a proxy class. 
+* Each proxy instance has an associated invocation handler object, which implements the interface InvocationHandler. 
+* A method invocation on a proxy instance through one of its proxy interfaces will be dispatched to the invoke method of the instance's invocation handler, passing the proxy instance, a java.lang.reflect.Method object identifying the method that was invoked, and an array of type Object containing the arguments. 
+* The invocation handler processes the encoded method invocation as appropriate and the result that it returns will be returned as the result of the method invocation on the proxy instance.
 
 
+---
 
-
-
+[Dynamic Proxy Classes](https://docs.oracle.com/javase/8/docs/technotes/guides/reflection/proxy.html)
 
 
 
@@ -277,9 +298,9 @@ public final Object readObject() throws IOException, ClassNotFoundException
 
 [自己实现RMI（一）基本原理](http://blog.csdn.net/semillon/article/details/7916372)
 
-三个关键的技术要点：
-1. 对象的查找或者索引，以及回调方法。
-2. 对象的序列化与反序列化。
+三个关键的技术要点：  
+1. 对象的查找或者索引，以及回调方法。  
+2. 对象的序列化与反序列化。  
 3. 底层socket通信
 
 * 实现对象的索引: 利用Java中的map数据结构
@@ -289,7 +310,7 @@ public final Object readObject() throws IOException, ClassNotFoundException
 [Java RMI（远程方法调用）开发](http://www.cnblogs.com/lvyahui/p/5425507.html)
 
 * 将可以远程调用的对象进行序列化，然后绑定到RMI Server（被调方，运行者）中作为存根（stub）
-* RMI Client 会先去下载stub反序列化然后发起client调用，RMI 底层（RMI Interface Layer & Transport Layer）会讲请求参数封装发送到RMI Server
+* RMI Client 会先去下载stub反序列化然后发起client调用，RMI 底层（RMI Interface Layer & Transport Layer）会讲请求参数封装发送到RMI Server 
 * RMI Server 接收到封装的参数，传递给桩（skeleton），由桩解析参数并且以参数调用对应的存根（）stub方法。
 * 存根方法在RMI Server执行完毕之后，返回结果将被RMI底层封装并传输给RMI Client（也就是主调方，调用者）
 
@@ -299,11 +320,11 @@ public final Object readObject() throws IOException, ClassNotFoundException
 
 * 客户端有客户辅助对象\(stub\)，服务端游服务辅助对象\(skeleton\)
 * 制作远程服务：
-1. 制作远程接口: 定义了可以供客户远程调用的方法。stub和实际服务都是实现该接口
-2. 制作远程接口的实现：真正的实际工作的服务
-3. 利用rmic产生stub
-4. 启动RMI：registry，rmiregistry如同一个清单，客户可以从中查到代理的位置
-5. 开始启动远程服务：开始启动远程服务，一般服务实现类会去实例化一个服务实例，然后将这个服务注册到RMI registry。
+  1. 制作远程接口: 定义了可以供客户远程调用的方法。stub和实际服务都是实现该接口
+  2. 制作远程接口的实现：真正的实际工作的服务
+  3. 利用rmic产生stub
+  4. 启动RMI：registry，rmiregistry如同一个清单，客户可以从中查到代理的位置
+  5. 开始启动远程服务：开始启动远程服务，一般服务实现类会去实例化一个服务实例，然后将这个服务注册到RMI registry。
 
 ---
 
@@ -326,5 +347,6 @@ public final Object readObject() throws IOException, ClassNotFoundException
 [RMI Source Code](http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/7-b147/java/rmi/RemoteException.java?av=f)
 
 ---
+
 
 

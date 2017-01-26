@@ -32,15 +32,10 @@ public class RMIData implements Serializable {
 	private String methodName;
 	
 	/**
-	 * A list of arguments for the called method
+	 * An array of objects containing the values of the arguments passed in the method 
 	 */
 	private Object[] args;
-	
-	/**
-	 * A list of Class of arguments for the called method
-	 */
-	private Class<?>[] argsClass;
-	
+		
 	/**
 	 * The return value of the method call
 	 */
@@ -56,11 +51,10 @@ public class RMIData implements Serializable {
 	 * @param className
 	 * @param methodName
 	 * @param args
-	 * @param argsClass
 	 * @param res
 	 * @param e
 	 */
-	public RMIData(String className, String methodName, Object[] args, Class<?>[] argsClass, Object res, Exception e) {
+	public RMIData(String className, String methodName, Object[] args, Object res, Exception e) {
 		this.className = className;
 		this.methodName = methodName;
 		this.result = res;
@@ -70,12 +64,6 @@ public class RMIData implements Serializable {
 		}
 		else {
 			this.args = args;
-		}
-		if (argsClass == null) {
-			this.argsClass = new Class[] {};
-		}
-		else {
-			this.argsClass = argsClass;
 		}
 		this.result = null;
 		this.exception = null;
@@ -90,7 +78,6 @@ public class RMIData implements Serializable {
 		this.className = null;
 		this.methodName = null;
 		this.args = null;
-		this.argsClass = null;
 		this.result = res;
 		this.exception = e;
 	}
@@ -110,14 +97,6 @@ public class RMIData implements Serializable {
 	 */
 	public Object getResult() {
 		return result;
-	}
-	
-	/**
-	 * Return a list of Class of arguments for the called method
-	 * @return Class of arguments
-	 */
-	public Class<?>[] getArgsClass() {
-		return argsClass;
 	}
 	
 	/**
