@@ -5,7 +5,6 @@
 package rmi;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -57,7 +56,7 @@ public class Listener<T> extends Thread {
 				e.printStackTrace();
 			}
 			// for execution when a thread in the pool becomes idle.
-			this.threadPool.execute(new Worker(client, localObj));
+			this.threadPool.execute(new Worker<T>(client, localObj));
 		}
 		
 		this.threadPool.shutdown();

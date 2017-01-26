@@ -5,7 +5,6 @@
 package rmi;
 
 import java.net.*;
-import java.io.IOException;
 
 /** RMI skeleton
 
@@ -34,7 +33,7 @@ public class Skeleton<T>
 	/**
 	 * a Thread Pooled Server 
 	 */
-	public Listener server;
+	public Listener<T> server;
 	/**
 	 * an IP Socket Address (IP address + port number)  
 	*/
@@ -200,7 +199,7 @@ public class Skeleton<T>
      */
     public synchronized void start() throws RMIException
     {
-    	server = new Listener(this, 10); 
+    	server = new Listener<T>(this, 10); 
     }
 
     /** Stops the skeleton server, if it is already running.

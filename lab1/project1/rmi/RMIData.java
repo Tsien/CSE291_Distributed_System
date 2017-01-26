@@ -37,9 +37,9 @@ public class RMIData implements Serializable {
 	private Object[] args;
 	
 	/**
-	 * A list of types of arguments for the called method
+	 * A list of Class of arguments for the called method
 	 */
-	private String[] argsType;
+	private Class<?>[] argsClass;
 	
 	/**
 	 * The return value of the method call
@@ -52,15 +52,15 @@ public class RMIData implements Serializable {
 	private Exception exception;
 	
 	/**
-	 * Constructor of {@code RMIData}. 
+	 * Constructor of {@code RMIData}, for request from client. 
 	 * @param className
 	 * @param methodName
 	 * @param args
-	 * @param argsType
+	 * @param argsClass
 	 * @param res
 	 * @param e
 	 */
-	public RMIData(String className, String methodName, Object[] args, String[] argsType, Object res, Exception e) {
+	public RMIData(String className, String methodName, Object[] args, Class<?>[] argsClass, Object res, Exception e) {
 		this.className = className;
 		this.methodName = methodName;
 		this.result = res;
@@ -71,13 +71,30 @@ public class RMIData implements Serializable {
 		else {
 			this.args = args;
 		}
-		if (argsType == null) {
-			this.argsType = new String[] {};
+		if (argsClass == null) {
+			this.argsClass = new Class[] {};
 		}
 		else {
-			this.argsType = argsType;
+			this.argsClass = argsClass;
 		}
+		this.result = null;
+		this.exception = null;
 	}
+	
+	/**
+	 * Constructor of {@code RMIData}, for response from server.
+	 * @param res
+	 * @param e
+	 */
+	public RMIData(Object res, Exception e) {
+		this.className = null;
+		this.methodName = null;
+		this.args = null;
+		this.argsClass = null;
+		this.result = res;
+		this.exception = e;
+	}
+	
 	
 	/**
 	 * Return any possible exception while making the method call
@@ -96,11 +113,11 @@ public class RMIData implements Serializable {
 	}
 	
 	/**
-	 * Return a list of types of arguments for the called method
-	 * @return types of arguments
+	 * Return a list of Class of arguments for the called method
+	 * @return Class of arguments
 	 */
-	public String[] getArgsType() {
-		return argsType;
+	public Class<?>[] getArgsClass() {
+		return argsClass;
 	}
 	
 	/**
