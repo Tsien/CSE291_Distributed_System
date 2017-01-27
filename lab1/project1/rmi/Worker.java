@@ -19,14 +19,29 @@ import java.util.ArrayList;
  *
  */
 public class Worker<T> extends Thread {
+	/**
+	 * The client socket
+	 */
 	private Socket client;
+	
+	/**
+	 * The real local object on the server
+	 */
 	public T localObj;
 	
+	/**
+	 * Constructor for {@code Worker}
+	 * @param ct The client socket
+	 * @param obj The real local object on the server
+	 */
 	public Worker(Socket ct, Skeleton<T> obj) {
 		client = ct;
 		localObj = obj.rmtObject;
 	}
 
+	/**
+	 * The tasks that {@code Worker} thread needs to handle
+	 */
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
@@ -76,6 +91,12 @@ public class Worker<T> extends Thread {
 		
 	}	
 	
+	/**
+	 * Executes the method call
+	 * @param methodName the name of called method
+	 * @param args An array of objects containing the values of the arguments passed in the method 
+	 * @return An object, the return value of the method call
+	 */
 	public Object runMethod(String methodName, Object[] args) {
 		// TODO how to find the right method? 
 		Object res = null;		
@@ -99,6 +120,11 @@ public class Worker<T> extends Thread {
 		return res;
 	}
 	
+	/**
+	 * Gets the class of objects, given an array of objects  
+	 * @param args, an array of objects
+	 * @return an array of class
+	 */
 	private Class<?>[] getArgsType(Object[] args) {
 		ArrayList<Class<?>> argsType = new ArrayList<>();
 		for (Object obj : args) {

@@ -20,13 +20,41 @@ import java.util.concurrent.Executors;
  * @param <T>
  */
 public class Listener<T> extends Thread {
+	/**
+	 * The port of server's socket
+	 */
 	private int             serverPort;
+	
+	/**
+	 * The max number of threads in thread pool
+	 */
 	private int             poolSize;
+	
+	/**
+	 * A sign to indicate whether the server is active
+	 */
 	private boolean         isActive;
+	
+	/**
+	 * The server's socket
+	 */
 	private ServerSocket    serverSocket;
+	
+	/**
+	 * The thread pool
+	 */
 	private ExecutorService threadPool;
+	
+	/**
+	 * The skeleton created for the local object
+	 */
 	Skeleton<T> localObj;
 	
+	/**
+	 * Constructor for {@code Listener}
+	 * @param Obj The skeleton created for the local object
+	 * @param num The max number of threads in thread pool
+	 */
 	public Listener(Skeleton<T> Obj, int num) {
 		localObj = Obj;
 		serverPort = localObj.address.getPort();
@@ -34,6 +62,10 @@ public class Listener<T> extends Thread {
 		threadPool = Executors.newFixedThreadPool(poolSize);
 	}
 	
+	/**
+	 * The tasks for the {@code Listener} thread
+	 */
+	@Override
 	public void run() {
 		try {
 			// open server socket
@@ -63,10 +95,17 @@ public class Listener<T> extends Thread {
 		System.out.println("The Server stopped normally!");
 	}
 	
+	/**
+	 * Checks whether the server is still active
+	 * @return A sign to indicate whether the server is active
+	 */
     private synchronized boolean isActive() {
         return this.isActive;
     }
 
+    /**
+     * Shuts down the server
+     */
     public synchronized void terminate(){
         this.isActive = false;            
         try {

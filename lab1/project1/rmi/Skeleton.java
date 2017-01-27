@@ -52,9 +52,14 @@ public class Skeleton<T>
 	public T rmtObject;
 	
 	/**
-	 * a sign to indicate whether the server is active
+	 * A sign to indicate whether the server is active
 	 */
 	public boolean isStopped;
+	
+	/**
+	 * The number of threads in the thread pool
+	 */
+	public int poolSize = 10;
 	
     /** Creates a <code>Skeleton</code> with no initial server address. The
         address will be determined by the system when <code>start</code> is
@@ -151,6 +156,7 @@ public class Skeleton<T>
      */
     protected void stopped(Throwable cause)
     {
+    	// TODO ???
     }
 
     /** Called when an exception occurs at the top level in the listening
@@ -170,6 +176,7 @@ public class Skeleton<T>
      */
     protected boolean listen_error(Exception exception)
     {
+    	// TODO
         return false;
     }
 
@@ -182,6 +189,7 @@ public class Skeleton<T>
      */
     protected void service_error(RMIException exception)
     {
+    	// TODO
     }
 
     /** Starts the skeleton server.

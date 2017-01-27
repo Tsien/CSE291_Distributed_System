@@ -25,17 +25,47 @@ import java.net.UnknownHostException;
  */
 public abstract class Stub
 {
+	/**
+	 * This class implements <code>InvocationHandler</code>. 
+	 * Each proxy instance has an associated invocation handler object, 
+	 * which implements the interface InvocationHandler. 
+	 * @author feichao
+	 *
+	 */
     private static class MyInvocationHandler implements InvocationHandler, Serializable {
     	
  		private static final long serialVersionUID = 8636975228194099266L;
  		
+ 		/**
+ 		 * The server's socket address
+ 		 */
  		private InetSocketAddress serverAddress;
+ 		
+ 		/**
+ 		 * A <code>Class</code> object representing the interface
+ 		 * implemented by the remote object.
+ 		 */
  		private Class<?> myClass;
 
+ 		/**
+ 		 * Constructor
+ 		 * @param c A <code>Class</code> object representing the interface
+                 implemented by the remote object.
+ 		 * @param address The server's socket address
+ 		 */
  		public MyInvocationHandler(Class<?> c, InetSocketAddress address) {
  			this.myClass = c;
  			this.serverAddress = address;
  		}
+ 		/**
+ 		 * The invocation handler processes the encoded method invocation as appropriate 
+ 		 * and the result that it returns will be returned as the result of the method 
+ 		 * invocation on the proxy instance.
+ 		 * @param proxy the proxy that is associated to the remote interface
+ 		 * @param method the invoked method on the proxy
+ 		 * @param args the parameters for the method call
+ 		 * @return the return value of the method call
+ 		 */
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			// TODO Auto-generated method stub
@@ -45,7 +75,7 @@ public abstract class Stub
 			ObjectOutputStream oStream = null;
 			RMIData request = null;
 			RMIData response = null;
-			
+			// TODO tyr/catch exceptions
 			client = new Socket(serverAddress.getHostName(), serverAddress.getPort());
 			oStream = new ObjectOutputStream(client.getOutputStream());
 			iStream = new ObjectInputStream(client.getInputStream());
@@ -89,7 +119,15 @@ public abstract class Stub
     public static <T> T create(Class<T> c, Skeleton<T> skeleton)
         throws UnknownHostException
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (c == null || skeleton == null) {
+        	throw new NullPointerException("Error : argument is null!");
+        }
+        // TODO how to check address
+        if (skeleton.address == null) {
+        	
+        }
+        // TODO check remote interface
+		return null;
     }
 
     /** Creates a stub, given a skeleton with an assigned address and a hostname
@@ -125,7 +163,15 @@ public abstract class Stub
     public static <T> T create(Class<T> c, Skeleton<T> skeleton,
                                String hostname)
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (c == null || skeleton == null || hostname == null) {
+        	throw new NullPointerException("Error : argument is null!");
+        }
+        // TODO how to check address
+        if (skeleton.address == null) {
+        	
+        }
+        // TODO check remote interface
+		return null;
     }
 
     /** Creates a stub, given the address of a remote server.
@@ -147,11 +193,19 @@ public abstract class Stub
      */
     public static <T> T create(Class<T> c, InetSocketAddress address)
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (c == null || address == null) {
+        	throw new NullPointerException("Error : argument is null!");
+        }
+        // TODO check remote interface
+		return null;
     }
     
     /**
-     * 
+     * Create a proxy, given the address of a remote server
+     * @param c A <code>Class</code> object representing the interface
+     * implemented by the remote object.
+     * @param address The network address of the remote skeleton.
+     * @return The proxy created
      */
     @SuppressWarnings("unused")
 	private static <T> T myCreate(Class<T> c, InetSocketAddress address) {
@@ -161,5 +215,5 @@ public abstract class Stub
     			new MyInvocationHandler(c, address));
     	return obj;
     }
-    
+    // TODO : implements equals, hashCode, toString
 }

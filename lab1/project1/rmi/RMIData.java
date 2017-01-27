@@ -8,9 +8,8 @@ package rmi;
 import java.io.Serializable;
 
 /**
- * This class wraps all kinds of data transformation between server and client
+ * This class encapsulates all kinds of data transformation between server and client
  * @author feichao
- *
  */
 public class RMIData implements Serializable {
 
@@ -48,11 +47,11 @@ public class RMIData implements Serializable {
 	
 	/**
 	 * Constructor of {@code RMIData}, for request from client. 
-	 * @param className
-	 * @param methodName
-	 * @param args
-	 * @param res
-	 * @param e
+	 * @param className The name of the class implementing the remote interface 
+	 * @param methodName The name of method called by the client
+	 * @param args An array of objects containing the values of the arguments passed in the method 
+	 * @param res The return value of the method call
+	 * @param e Any possible exception while making the method call
 	 */
 	public RMIData(String className, String methodName, Object[] args, Object res, Exception e) {
 		this.className = className;
@@ -71,8 +70,8 @@ public class RMIData implements Serializable {
 	
 	/**
 	 * Constructor of {@code RMIData}, for response from server.
-	 * @param res
-	 * @param e
+	 * @param res The return value of the method call
+	 * @param e Any possible exception while making the method call
 	 */
 	public RMIData(Object res, Exception e) {
 		this.className = null;
@@ -85,7 +84,7 @@ public class RMIData implements Serializable {
 	
 	/**
 	 * Return any possible exception while making the method call
-	 * @return exception
+	 * @return Any possible exception while making the method call
 	 */
 	public Exception getException() {
 		return this.exception;
@@ -93,15 +92,15 @@ public class RMIData implements Serializable {
 	
 	/**
 	 * Return the return value of method call
-	 * @return result
+	 * @return The return value of the method call
 	 */
 	public Object getResult() {
 		return result;
 	}
 	
 	/**
-	 * Return a list of arguments for the called method
-	 * @return arguments
+	 * Return a array of arguments for the called method
+	 * @return An array of objects containing the values of the arguments passed in the method 
 	 */
 	public Object[] getArgs() {
 		return args;
