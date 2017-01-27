@@ -36,7 +36,7 @@ public class Worker<T> extends Thread {
 	 */
 	public Worker(Socket ct, Skeleton<T> obj) {
 		client = ct;
-		localObj = obj.rmtObject;
+		localObj = obj.getRmtObject();
 	}
 
 	/**

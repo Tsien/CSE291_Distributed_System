@@ -123,10 +123,13 @@ public abstract class Stub
         	throw new NullPointerException("Error : argument is null!");
         }
         // TODO how to check address
-        if (skeleton.address == null) {
+        if (skeleton.getAddress() == null) {
         	
         }
-        // TODO check remote interface
+        // check remote interface
+        if (!IsRemoteInterface.check(c)) {
+            throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
+        }
 		return null;
     }
 
@@ -167,10 +170,14 @@ public abstract class Stub
         	throw new NullPointerException("Error : argument is null!");
         }
         // TODO how to check address
-        if (skeleton.address == null) {
+        if (skeleton.getAddress() == null) {
         	
         }
-        // TODO check remote interface
+        // check remote interface
+        if (!IsRemoteInterface.check(c)) {
+            throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
+        }
+
 		return null;
     }
 
@@ -196,7 +203,10 @@ public abstract class Stub
         if (c == null || address == null) {
         	throw new NullPointerException("Error : argument is null!");
         }
-        // TODO check remote interface
+        // check remote interface
+        if (!IsRemoteInterface.check(c)) {
+            throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
+        }
 		return null;
     }
     

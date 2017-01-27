@@ -57,7 +57,7 @@ public class Listener<T> extends Thread {
 	 */
 	public Listener(Skeleton<T> Obj, int num) {
 		localObj = Obj;
-		serverPort = localObj.address.getPort();
+		serverPort = localObj.getAddress().getPort();
 		poolSize = num;
 		threadPool = Executors.newFixedThreadPool(poolSize);
 	}

@@ -1,5 +1,6 @@
 package rmi;
 
+
 /** RMI exceptions. */
 public class RMIException extends Exception
 {

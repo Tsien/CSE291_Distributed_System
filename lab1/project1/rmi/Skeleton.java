@@ -33,33 +33,33 @@ public class Skeleton<T>
 	/**
 	 * a Thread Pooled Server 
 	 */
-	public Listener<T> server;
+	private Listener<T> myServer;
 	/**
 	 * an IP Socket Address (IP address + port number)  
 	*/
-	public InetSocketAddress address;
+	private InetSocketAddress myAddress;
 	
 	/**
 	 * An object representing the class of the interface for which the 
 	 * skeleton server is to handle method call requests.
 	 */
-	public Class<T> rmtItface;
+	private Class<T> rmtItface;
 	
 	/**
 	 * An object implementing said interface. Requests for method
 	 * calls are forwarded by the skeleton to this object.
 	 */
-	public T rmtObject;
+	private T rmtObject;
 	
 	/**
 	 * A sign to indicate whether the server is active
 	 */
-	public boolean isStopped;
+	private boolean isStopped;
 	
 	/**
 	 * The number of threads in the thread pool
 	 */
-	public int poolSize = 10;
+	private int poolSize = 10;
 	
     /** Creates a <code>Skeleton</code> with no initial server address. The
         address will be determined by the system when <code>start</code> is
@@ -88,15 +88,12 @@ public class Skeleton<T>
         if (server == null) {
             throw new NullPointerException("Error: An object implementing said interface is null");
         }
-        //TODO!
-        /* 
-        if (!isRemoted(c)) {
-            throw RMIException("Error: " + c.getName() + " is NOT a remote interface!");
+        if (!IsRemoteInterface.check(c)) {
+            throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
-        */
-        address = new InetSocketAddress("localhost", 2017);//default address
+        setAddress(new InetSocketAddress("localhost", 2017));//default address
         rmtItface = c;
-        rmtObject = server;
+        setRmtObject(server);
     }
 
     /** Creates a <code>Skeleton</code> with the given initial server address.
@@ -125,15 +122,12 @@ public class Skeleton<T>
         if (server == null) {
             throw new NullPointerException("Error: An object implementing said interface is null");
         }
-        //TODO!
-        /* 
-        if (!isRemoted(c)) {
-            throw RMIException("Error: " + c.getName() + " is NOT a remote interface!");
+        if (!IsRemoteInterface.check(c)) {
+            throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
-        */
-        this.address = address;
+        this.setAddress(address);
         rmtItface = c;
-        rmtObject = server;
+        setRmtObject(server);
     }
 
     /** Called when the listening thread exits.
@@ -207,7 +201,7 @@ public class Skeleton<T>
      */
     public synchronized void start() throws RMIException
     {
-    	server = new Listener<T>(this, 10); 
+    	myServer = new Listener<T>(this, 10); 
     }
 
     /** Stops the skeleton server, if it is already running.
@@ -221,6 +215,22 @@ public class Skeleton<T>
      */
     public synchronized void stop()
     {
-    	server.terminate();
+    	myServer.terminate();
     }
+    
+	public InetSocketAddress getAddress() {
+		return myAddress;
+	}
+
+	public void setAddress(InetSocketAddress address) {
+		this.myAddress = address;
+	}
+
+	public T getRmtObject() {
+		return rmtObject;
+	}
+
+	public void setRmtObject(T rmtObject) {
+		this.rmtObject = rmtObject;
+	}
 }
