@@ -70,6 +70,7 @@ public class Listener<T> extends Thread {
 		try {
 			// open server socket
 			serverSocket = new ServerSocket(serverPort);
+			this.isActive = true;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -91,8 +92,12 @@ public class Listener<T> extends Thread {
 			this.threadPool.execute(new Worker<T>(client, localObj));
 		}
 		
-		this.threadPool.shutdown();
+		// shut down thread pool
+		this.threadPool.shutdownNow();
 		System.out.println("The Server stopped normally!");
+		
+		// close socket connection
+		this.terminate();
 	}
 	
 	/**
@@ -107,12 +112,14 @@ public class Listener<T> extends Thread {
      * Shuts down the server
      */
     public synchronized void terminate(){
+        if (this.isActive) {
+	        try {
+				this.serverSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				throw new RuntimeException("Error: fail to stop the server", e);
+			}
+        }
         this.isActive = false;            
-        try {
-			this.serverSocket.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			throw new RuntimeException("Error: fail to stop the server", e);
-		}
     }
 }

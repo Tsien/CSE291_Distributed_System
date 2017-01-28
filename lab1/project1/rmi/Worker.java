@@ -52,6 +52,7 @@ public class Worker<T> extends Thread {
 
 		try {
 			oStream = new ObjectOutputStream(client.getOutputStream());
+			oStream.flush();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -88,7 +89,6 @@ public class Worker<T> extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}	
 	
 	/**

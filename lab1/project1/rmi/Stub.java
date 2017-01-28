@@ -78,14 +78,18 @@ public abstract class Stub
 			// TODO tyr/catch exceptions
 			client = new Socket(serverAddress.getHostName(), serverAddress.getPort());
 			oStream = new ObjectOutputStream(client.getOutputStream());
+			oStream.flush();
 			iStream = new ObjectInputStream(client.getInputStream());
 			request = new RMIData(myClass.getName(), method.getName(), args, null, null);
 			oStream.writeObject(request);
 			response = (RMIData) iStream.readObject();
 			client.close();
-			return response.getResult();
+			Object res = response.getResult();
+			if (res == null) {
+				throw response.getException();
+			}
+			return res;
 		}
-    	
     } 
 
     /** Creates a stub, given a skeleton with an assigned adress.

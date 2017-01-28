@@ -50,12 +50,7 @@ public class Skeleton<T>
 	 * calls are forwarded by the skeleton to this object.
 	 */
 	private T rmtObject;
-	
-	/**
-	 * A sign to indicate whether the server is active
-	 */
-	private boolean isStopped;
-	
+		
 	/**
 	 * The number of threads in the thread pool
 	 */
@@ -91,8 +86,9 @@ public class Skeleton<T>
         if (!IsRemoteInterface.check(c)) {
             throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
+        myServer = null;
         setAddress(new InetSocketAddress("localhost", 2017));//default address
-        rmtItface = c;
+        setRmtItface(c);
         setRmtObject(server);
     }
 
@@ -125,8 +121,9 @@ public class Skeleton<T>
         if (!IsRemoteInterface.check(c)) {
             throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
+        myServer = null;
         this.setAddress(address);
-        rmtItface = c;
+        setRmtItface(c);
         setRmtObject(server);
     }
 
@@ -201,7 +198,8 @@ public class Skeleton<T>
      */
     public synchronized void start() throws RMIException
     {
-    	myServer = new Listener<T>(this, 10); 
+    	myServer = new Listener<T>(this, poolSize); 
+    	myServer.start();
     }
 
     /** Stops the skeleton server, if it is already running.
@@ -232,5 +230,13 @@ public class Skeleton<T>
 
 	public void setRmtObject(T rmtObject) {
 		this.rmtObject = rmtObject;
+	}
+
+	public Class<T> getRmtItface() {
+		return rmtItface;
+	}
+
+	public void setRmtItface(Class<T> rmtItface) {
+		this.rmtItface = rmtItface;
 	}
 }
