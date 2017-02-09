@@ -4,6 +4,7 @@
 
 package rmi;
 
+import java.io.IOException;
 import java.net.*;
 
 /** RMI skeleton
@@ -31,9 +32,20 @@ import java.net.*;
 public class Skeleton<T>
 {
 	/**
+	 * A boolean variable to indicate whether the server is running
+	 */
+	private boolean isRunning;
+	
+	/**
 	 * a Thread Pooled Server 
 	 */
 	private Listener<T> myServer;
+	
+	/**
+	 * The server's socket
+	 */
+	public ServerSocket    serverSocket;
+	
 	/**
 	 * an IP Socket Address (IP address + port number)  
 	*/
@@ -87,14 +99,10 @@ public class Skeleton<T>
             throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
         this.myServer = null;
-        try {//default address
-			this.setAddress(new InetSocketAddress(InetAddress.getLocalHost(), 0));
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        this.setAddress(null);
         this.setRmtItface(c);
         this.setRmtObject(server);
+        this.isRunning = false;
     }
 
     /** Creates a <code>Skeleton</code> with the given initial server address.
@@ -130,6 +138,7 @@ public class Skeleton<T>
         this.setAddress(address);
         this.setRmtItface(c);
         this.setRmtObject(server);
+        this.isRunning = false;
     }
 
     /** Called when the listening thread exits.
@@ -207,8 +216,36 @@ public class Skeleton<T>
      */
     public synchronized void start() throws RMIException
     {
-    	myServer = new Listener<T>(this); 
-    	myServer.start();
+    	if (!this.isRunning) {
+	    	this.isRunning = true;
+    		try {
+    			// open server socket
+    			if (this.myAddress == null) {
+    				//use port 0 to choose a random port number from 1024
+    				serverSocket = new ServerSocket(0, poolSize);
+    				myAddress = (InetSocketAddress)serverSocket.getLocalSocketAddress();
+    			}
+    			else {
+    				serverSocket = new ServerSocket(myAddress.getPort(), poolSize, myAddress.getAddress());
+    			}
+    			
+    			System.out.println("************");
+    			System.out.println("IP:" + serverSocket.getLocalSocketAddress() + ", Port:" + serverSocket.getLocalPort());
+    			System.out.println("************");
+        		myServer = new Listener<T>(this); 
+    	    	myServer.start();
+    		} catch (IOException e) {
+    			// TODO Auto-generated catch block
+    			System.out.println("************");
+    			System.out.println("Fail to open a server socket!");
+    			System.out.println("************");
+    			e.printStackTrace();
+    		}    		
+
+    	}
+    	else {
+    		throw new RMIException("Error: The server is already running!");
+    	}
     }
 
     /** Stops the skeleton server, if it is already running.
@@ -222,8 +259,15 @@ public class Skeleton<T>
      */
     public synchronized void stop()
     {
-    	myServer.terminate();
     	myServer = null;
+    	this.isRunning = false;
+    	try {
+			serverSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	serverSocket = null;
     }
     
 	public InetSocketAddress getAddress() {

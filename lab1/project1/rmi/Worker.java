@@ -53,17 +53,10 @@ public class Worker<T> extends Thread {
 		try {
 			oStream = new ObjectOutputStream(client.getOutputStream());
 			oStream.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		try {
 			iStream = new ObjectInputStream(client.getInputStream());
 			// Read object from stream
 			request = (RMIData)iStream.readObject();
 			// TODO what if rmiData.className != T
-			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -71,6 +64,7 @@ public class Worker<T> extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		if (request != null) {
 			Object res = runMethod(request.getMethodName(), request.getArgs());
 			RMIData response = new RMIData(res, null);			
@@ -83,8 +77,7 @@ public class Worker<T> extends Thread {
 		}
 		
 		try {
-			oStream.close();
-			iStream.close();
+			client.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

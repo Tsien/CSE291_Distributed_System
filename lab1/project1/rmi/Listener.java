@@ -5,7 +5,6 @@
 package rmi;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -49,30 +48,17 @@ public class Listener<T> extends Thread {
 	public Listener(Skeleton<T> Obj) {
 		this.localObj = Obj;
 		this.threadPool = Executors.newFixedThreadPool(Obj.getPoolSize());
+		this.serverSocket = Obj.serverSocket;
 	}
 	
 	/**
 	 * The tasks for the {@code Listener} thread
 	 */
 	@Override
-	public void run() {
-		InetSocketAddress myAddress = localObj.getAddress();
-		try {
-			// open server socket
-			serverSocket = new ServerSocket(myAddress.getPort(), localObj.getPoolSize(), myAddress.getAddress());
-			System.out.println("************");
-			System.out.println("IP:" + serverSocket.getLocalSocketAddress() + ", Port:" + serverSocket.getLocalPort());
-			System.out.println("************");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println("************");
-			System.out.println("Fail to open a server socket!");
-			System.out.println("************");
-			e.printStackTrace();
-		}
+	public void run() {		
 		this.isActive = true;
 		while (isActive()) {
-			Socket client = null;
+			Socket client = null;		
 			try {
 				// Wait for the Client Request
 				client = serverSocket.accept();
@@ -111,15 +97,7 @@ public class Listener<T> extends Thread {
      * Shuts down the server
      */
     public synchronized void terminate(){
-    	if (serverSocket != null) {
-	        try {
-				this.serverSocket.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				throw new RuntimeException("Error: fail to stop the server", e);
-			}
-    	}
         this.isActive = false;
-        serverSocket = null;
+        localObj.stop();
     }
 }

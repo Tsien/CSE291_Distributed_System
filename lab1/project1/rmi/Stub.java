@@ -132,10 +132,6 @@ public abstract class Stub
         if (c == null || skeleton == null) {
         	throw new NullPointerException("Error : argument is null!");
         }
-        // TODO how to check address
-        if (skeleton.getAddress() == null) {
-        	
-        }
         // check remote interface
         if (!IsRemoteInterface.check(c)) {
             throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
@@ -221,7 +217,7 @@ public abstract class Stub
             throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
 		T obj = (T)Proxy.newProxyInstance(c.getClassLoader(), 
-    			new Class<?>[] {c, Serializable.class}, 
+    			new Class<?>[] {c}, 
     			new MyInvocationHandler(c, address));
     	return obj;
     }
