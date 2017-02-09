@@ -69,14 +69,20 @@ public abstract class Stub
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			// TODO Auto-generated method stub
-			
-			Socket client = null;
+			Socket client = new Socket();
 			ObjectInputStream iStream = null;
 			ObjectOutputStream oStream = null;
 			RMIData request = null;
 			RMIData response = null;
-			// TODO tyr/catch exceptions
-			client = new Socket(serverAddress.getHostName(), serverAddress.getPort());
+			// TODO try/catch exceptions
+			System.out.println("************");
+			System.out.println("Host:" + serverAddress.getAddress() + " , Port:" + serverAddress.getPort());
+			System.out.println("************");
+			try {
+				client.connect(serverAddress);
+			} catch (Exception e){
+				e.printStackTrace();
+			}
 			oStream = new ObjectOutputStream(client.getOutputStream());
 			oStream.flush();
 			iStream = new ObjectInputStream(client.getInputStream());
@@ -134,7 +140,11 @@ public abstract class Stub
         if (!IsRemoteInterface.check(c)) {
             throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
-		return null;
+        InetSocketAddress address = skeleton.getAddress();
+        if (address == null) {
+        	throw new IllegalStateException("The skeleton has not been assigned an address by the user and has not yet been started.");
+        }
+		return create(c, address);
     }
 
     /** Creates a stub, given a skeleton with an assigned address and a hostname
@@ -173,16 +183,15 @@ public abstract class Stub
         if (c == null || skeleton == null || hostname == null) {
         	throw new NullPointerException("Error : argument is null!");
         }
-        // TODO how to check address
-        if (skeleton.getAddress() == null) {
-        	
-        }
         // check remote interface
         if (!IsRemoteInterface.check(c)) {
             throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
-
-		return null;
+        InetSocketAddress address = skeleton.getAddress();
+        if (address == null) {
+        	throw new IllegalStateException("The skeleton has not been assigned an address by the user and has not yet been started.");
+        }
+		return create(c, new InetSocketAddress(hostname, address.getPort()));
     }
 
     /** Creates a stub, given the address of a remote server.
@@ -211,23 +220,11 @@ public abstract class Stub
         if (!IsRemoteInterface.check(c)) {
             throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
-		return null;
-    }
-    
-    /**
-     * Create a proxy, given the address of a remote server
-     * @param c A <code>Class</code> object representing the interface
-     * implemented by the remote object.
-     * @param address The network address of the remote skeleton.
-     * @return The proxy created
-     */
-    @SuppressWarnings("unused")
-	private static <T> T myCreate(Class<T> c, InetSocketAddress address) {
-    	@SuppressWarnings("unchecked")
 		T obj = (T)Proxy.newProxyInstance(c.getClassLoader(), 
     			new Class<?>[] {c, Serializable.class}, 
     			new MyInvocationHandler(c, address));
     	return obj;
     }
+    
     // TODO : implements equals, hashCode, toString
 }

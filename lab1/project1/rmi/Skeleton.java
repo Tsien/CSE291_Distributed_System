@@ -86,10 +86,15 @@ public class Skeleton<T>
         if (!IsRemoteInterface.check(c)) {
             throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
-        myServer = null;
-        setAddress(new InetSocketAddress("localhost", 2017));//default address
-        setRmtItface(c);
-        setRmtObject(server);
+        this.myServer = null;
+        try {//default address
+			this.setAddress(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        this.setRmtItface(c);
+        this.setRmtObject(server);
     }
 
     /** Creates a <code>Skeleton</code> with the given initial server address.
@@ -121,10 +126,10 @@ public class Skeleton<T>
         if (!IsRemoteInterface.check(c)) {
             throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
-        myServer = null;
+        this.myServer = null;
         this.setAddress(address);
-        setRmtItface(c);
-        setRmtObject(server);
+        this.setRmtItface(c);
+        this.setRmtObject(server);
     }
 
     /** Called when the listening thread exits.
@@ -181,6 +186,10 @@ public class Skeleton<T>
     protected void service_error(RMIException exception)
     {
     	// TODO
+		System.out.println("************");
+    	System.out.println("Exception on the server end:");
+		System.out.println("************");
+    	exception.printStackTrace();
     }
 
     /** Starts the skeleton server.
@@ -198,7 +207,7 @@ public class Skeleton<T>
      */
     public synchronized void start() throws RMIException
     {
-    	myServer = new Listener<T>(this, poolSize); 
+    	myServer = new Listener<T>(this); 
     	myServer.start();
     }
 
@@ -214,6 +223,7 @@ public class Skeleton<T>
     public synchronized void stop()
     {
     	myServer.terminate();
+    	myServer = null;
     }
     
 	public InetSocketAddress getAddress() {
@@ -238,5 +248,9 @@ public class Skeleton<T>
 
 	public void setRmtItface(Class<T> rmtItface) {
 		this.rmtItface = rmtItface;
+	}
+
+	public int getPoolSize() {
+		return poolSize;
 	}
 }

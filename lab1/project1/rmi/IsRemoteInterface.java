@@ -17,6 +17,7 @@ public final class IsRemoteInterface {
     	Method[] methods = c.getMethods();
     	for (Method m : methods) {
     		Class<?>[] exps = m.getExceptionTypes();
+//    		System.out.println("Class is:" + exps[0].toString());
     		if (!Arrays.asList(exps).contains(RMIException.class)) {
     			return false;
     		}
