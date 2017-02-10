@@ -57,7 +57,7 @@ public class Worker<T> extends Thread {
 			iStream = new ObjectInputStream(client.getInputStream());
 			// Read object from stream
 			request = (RMIData)iStream.readObject();
-			System.out.println("INSIDE WORKER: REMOTE METHOD NAME" + request.getMethodName());
+			System.out.println("INSIDE WORKER: REMOTE METHOD NAME is : " + request.getMethodName());
 			// TODO what if rmiData.className != T
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -70,8 +70,7 @@ public class Worker<T> extends Thread {
 		}
 		
 		if (request != null) {
-			Object res = runMethod(request.getMethodName(), request.getArgs());
-			RMIData response = new RMIData(res, null);			
+			RMIData response = runMethod(request.getMethodName(), request.getArgs(), request.getArgsType());
 			try {
 				oStream.writeObject(response);
 			} catch (IOException e) {
@@ -96,50 +95,34 @@ public class Worker<T> extends Thread {
 	 * @param args An array of objects containing the values of the arguments passed in the method 
 	 * @return An object, the return value of the method call
 	 */
-	public Object runMethod(String methodName, Object[] args) {
+	public RMIData runMethod(String methodName, Object[] args, Class<?>[] argsType) {
 		// TODO how to find the right method? 
-		Object res = null;		
+		Object val = null;
 		Class<?> objClass = localObj.getClass();
 		Method targetMethod = null;
-		Class<?>[] argsType = getArgsType(args);
+		for (Class<?> a : argsType) {
+			System.out.println(a);
+		}
 		try {
+			System.out.println("********" + methodName + " in " + objClass.getName() + "*****");
 			targetMethod = objClass.getDeclaredMethod(methodName, argsType);
 		} catch (NoSuchMethodException | SecurityException e1) {
 			// TODO Auto-generated catch block
-			//e1.printStackTrace();
+			e1.printStackTrace();
 			System.out.println("==========Exp when runMethod1==========");
+			return new RMIData(null, e1);
 		}
 		if (targetMethod != null) {
 			try {
-				res = targetMethod.invoke(localObj, args);
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				val = targetMethod.invoke(localObj, args);
+			} catch (InvocationTargetException e1) {
+				return new RMIData(null, (Exception)e1.getTargetException());				
+			} catch (IllegalAccessException | IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
 				System.out.println("==========Exp when runMethod2==========");
 			}
 		}
-		return res;
-	}
-	
-	/**
-	 * Gets the class of objects, given an array of objects  
-	 * @param args, an array of objects
-	 * @return an array of class
-	 */
-	private Class<?>[] getArgsType(Object[] args) {
-		
-		ArrayList<Class<?>> argsType = new ArrayList<>();
-		if(args!=null)
-		{	
-			for (Object obj : args){
-				if(args==null)
-					argsType.add(obj.getClass());
-				
-			}
-			Class<?>[] res = new Class<?>[argsType.size()];
-			return (Class<?>[])argsType.toArray(res);
-		}
-		System.out.print("auguments is null");
-		return null;
+		return new RMIData(val, null);
 	}
 }

@@ -19,16 +19,8 @@ import java.util.concurrent.Executors;
  * a Runnable from the queue and execute it.
  * @param <T>
  */
-public class Listener<T> extends Thread {		
+public class Listener<T> extends Thread {
 	/**
-<<<<<<< HEAD
-=======
-	 * A sign to indicate whether the server is active
-	 */
-	private boolean         isActive = false;
-	
-	/**
->>>>>>> a6b52ba23c0a47a115ed5155f700e8a3b71a7b1d
 	 * The server's socket
 	 */
 	private ServerSocket    serverSocket;
@@ -63,8 +55,17 @@ public class Listener<T> extends Thread {
 			Socket client = null;		
 			try {
 				// Wait for the Client Request
+				System.out.println("************");
+				System.out.println("IP:" + serverSocket.getLocalSocketAddress() + ", Port:" + serverSocket.getLocalPort());
+				System.out.println("************");
 				client = serverSocket.accept();
 				System.out.println("Listener accepted!");
+				if (this.localObj.getIsRunning()) {
+					// for execution when a thread in the pool becomes idle.
+					System.out.println("Starting service thread!");
+					this.threadPool.execute(new Worker<T>(client, localObj));
+					System.out.println("Started service thread!");
+				}
 			} catch (IOException e) {
 				if (!this.localObj.getIsRunning()) {
 					System.out.println("The server is stopped..");
@@ -73,32 +74,12 @@ public class Listener<T> extends Thread {
 				//e.printStackTrace(); 
 				System.out.println("==========IOException in Listener:run()==========");
 			}
-
-			if (this.localObj.getIsRunning()) {
-				// for execution when a thread in the pool becomes idle.
-				this.threadPool.execute(new Worker<T>(client, localObj));
-			}
-
-			// for execution when a thread in the pool becomes idle.
-			System.out.println("Starting service thread!");
-			this.threadPool.execute(new Worker<T>(client, localObj));
-			System.out.println("Started service thread!");
 		}
 		
 		// shut down thread pool
-		//this.threadPool.shutdownNow();
+		this.threadPool.shutdownNow();
 
-		//System.out.println("************");
-		//System.out.println("The Server stopped normally!");
-		//System.out.println("************");
 		// close socket connection
-		//this.terminate();
-	}
-	
-    /**
-     * Shuts down the server
-     */
-    public synchronized void terminate(){
-        localObj.stop();
-    }
+		this.localObj.stop();
+	}	
 }

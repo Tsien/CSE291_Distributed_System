@@ -82,7 +82,7 @@ public abstract class Stub
 				oStream.flush();			
 				iStream = new ObjectInputStream(client.getInputStream());
 				System.out.println("==============OPEN I_STREAM============");
-				request = new RMIData(myClass.getName(), method.getName(), args, null, null);
+				request = new RMIData(myClass.getName(), method.getName(), args, method.getParameterTypes(), null, null);
 				oStream.writeObject(request);
 				response = (RMIData) iStream.readObject();
 				client.close();				
@@ -96,8 +96,11 @@ public abstract class Stub
 			
 			if (response != null) {
 				Object res = response.getResult();
-				if (res == null) {
-					throw response.getException();
+				Exception e = response.getException();
+				System.out.println("Remote call result: " + res);
+				System.out.println("Remote call exception: " + e);
+				if (e != null) {
+					throw e;
 				}
 				return res;
 			}
