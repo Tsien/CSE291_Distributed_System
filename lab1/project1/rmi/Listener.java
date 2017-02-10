@@ -33,7 +33,7 @@ public class Listener<T> extends Thread {
 	/**
 	 * The skeleton created for the local object
 	 */
-	Skeleton<T> localObj;
+	private Skeleton<T> localObj;
 	
 	/**
 	 * Constructor for {@code Listener}
@@ -71,15 +71,15 @@ public class Listener<T> extends Thread {
 					System.out.println("The server is stopped..");
 				}
 				// TODO Auto-generated catch block
-				//e.printStackTrace(); 
-				System.out.println("==========IOException in Listener:run()==========");
+				e.printStackTrace(); 
+				System.out.println("==========Listener: IOException in run()==========");
 			}
 		}
 		
 		// shut down thread pool
-		this.threadPool.shutdownNow();
+		//this.threadPool.shutdownNow();
 
 		// close socket connection
-		this.localObj.stop();
+		//this.localObj.stop();
 	}	
 }

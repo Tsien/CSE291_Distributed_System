@@ -30,6 +30,7 @@ public class ConformanceTests
                          conformance.rmi.ExceptionTest.class,
                          conformance.rmi.CompleteCallTest.class,
                          conformance.rmi.ImplicitStubCallTest.class,
+                         
                          conformance.rmi.NullTest.class,
                          conformance.rmi.RemoteInterfaceTest.class,
                          conformance.rmi.ListenTest.class,

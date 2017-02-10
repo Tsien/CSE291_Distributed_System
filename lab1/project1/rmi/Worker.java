@@ -108,18 +108,22 @@ public class Worker<T> extends Thread {
 		} catch (NoSuchMethodException | SecurityException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-			System.out.println("==========Exp when runMethod1==========");
+			System.out.println("==========Worker: Exp when runMethod1==========");
 			return new RMIData(null, e1);
 		}
 		if (targetMethod != null) {
 			try {
+				System.out.println("==========Worker: class:" + localObj.getClass().getName());
+				System.out.println("==========Worker: method: " + targetMethod.getName());
+				targetMethod.setAccessible(true);
 				val = targetMethod.invoke(localObj, args);
 			} catch (InvocationTargetException e1) {
 				return new RMIData(null, (Exception)e1.getTargetException());				
 			} catch (IllegalAccessException | IllegalArgumentException e) {
 				// TODO Auto-generated catch block
-				//e.printStackTrace();
-				System.out.println("==========Exp when runMethod2==========");
+				e.printStackTrace();
+				System.out.println("==========Worker: Exp when runMethod2==========");
+				return new RMIData(null, new RMIException(e));
 			}
 		}
 		return new RMIData(val, null);

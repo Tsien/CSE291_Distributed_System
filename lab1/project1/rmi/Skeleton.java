@@ -258,6 +258,7 @@ public class Skeleton<T>
      */
     public synchronized void stop()
     {
+    	System.out.println("Skeleton: The server is closing...");
     	myServer = null;
     	this.isRunning = false;
 
@@ -272,6 +273,7 @@ public class Skeleton<T>
     	}
     	serverSocket = null;
     	stopped(null);
+    	System.out.println("Skeleton: The server is closed!");
     }
     
 	public InetSocketAddress getAddress() {

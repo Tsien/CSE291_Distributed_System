@@ -112,18 +112,18 @@ public abstract class Stub
 				oStream = new ObjectOutputStream(client.getOutputStream());
 				oStream.flush();			
 				iStream = new ObjectInputStream(client.getInputStream());
-				System.out.println("==============OPEN I_STREAM============");
+				System.out.println("==============STUB: OPEN I_STREAM============");
 				request = new RMIData(myClass.getName(), method.getName(), args, method.getParameterTypes(), null, null);
 				oStream.writeObject(request);
 				response = (RMIData) iStream.readObject();
 				client.close();				
 			} catch (IOException e){
-				System.out.println("==============IO_EXCEPTION============");				
+				System.out.println("==============STUB: IO_EXCEPTION============");				
 				//e.printStackTrace();
 				throw (Throwable) (new RMIException(e));
 			}
 						
-			System.out.println("==============CLIENT CLOSE============");
+			System.out.println("==============STUB: CLIENT CLOSE============");
 			
 			if (response != null) {
 				Object res = response.getResult();
@@ -258,11 +258,10 @@ public abstract class Stub
         if (!IsRemoteInterface.check(c)) {
             throw new Error("Error: " + c.getName() + " is NOT a remote interface!");
         }
+		@SuppressWarnings("unchecked")
 		T obj = (T)Proxy.newProxyInstance(c.getClassLoader(), 
-    			new Class<?>[] {c}, 
+    			new Class<?>[] {c, Serializable.class}, 
     			new MyInvocationHandler(c, address));
     	return obj;
     }
-    
-    // TODO : implements equals, hashCode, toString
 }
