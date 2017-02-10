@@ -28,8 +28,6 @@ public class Worker<T> extends Thread {
 	 * The real local object on the server
 	 */
 	public T localObj;
-	
-	private Skeleton<T> skt;
 
 	/**
 	 * Constructor for {@code Worker}
@@ -39,7 +37,6 @@ public class Worker<T> extends Thread {
 	public Worker(Socket ct, Skeleton<T> obj) {
 		client = ct;
 		localObj = obj.getRmtObject();
-		skt = obj;
 	}
 
 	/**
@@ -47,56 +44,50 @@ public class Worker<T> extends Thread {
 	 */
 	@Override
 	public void run() {
-        System.out.println("INSIDE WORKER before run!");
-        
-        if (skt.isRunning) {
-        	 System.out.println("INSIDE WORKER run!");
+    	// TODO Auto-generated method stub
+		// Create I/O streams for communicating to the client
+		ObjectOutputStream oStream = null;
+		ObjectInputStream iStream = null;
+		RMIData request = null;
 
-        	// TODO Auto-generated method stub
-			// Create I/O streams for communicating to the client
-			ObjectOutputStream oStream = null;
-			ObjectInputStream iStream = null;
-			RMIData request = null;
-
-			try {
-				System.out.println("INSIDE WORKER TRY!");
-				oStream = new ObjectOutputStream(client.getOutputStream());
-				oStream.flush();
-				iStream = new ObjectInputStream(client.getInputStream());
-				// Read object from stream
-				request = (RMIData)iStream.readObject();
-				System.out.println("INSIDE WORKER: REMOTE METHOD NAME" + request.getMethodName());
-				// TODO what if rmiData.className != T
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				System.out.println("INSIDE WORKER: IOException!");
-				//e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				System.out.println("INSIDE WORKER: ClassNotFoundException!");
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-			}
-
-			System.out.println("INSIDE WORKER! LHEFOWIHFOWHF");
-			
-			if (request != null) {
-				Object res = runMethod(request.getMethodName(), request.getArgs());
-				RMIData response = new RMIData(res, null);			
-				try {
-					oStream.writeObject(response);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					//e.printStackTrace();
-				}
-			}
-			
-			try {
-				client.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-			} 
+		try {
+			System.out.println("INSIDE WORKER TRY!");
+			oStream = new ObjectOutputStream(client.getOutputStream());
+			oStream.flush();
+			iStream = new ObjectInputStream(client.getInputStream());
+			// Read object from stream
+			request = (RMIData)iStream.readObject();
+			System.out.println("INSIDE WORKER: REMOTE METHOD NAME" + request.getMethodName());
+			// TODO what if rmiData.className != T
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.out.println("INSIDE WORKER: IOException!");
+			//e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			System.out.println("INSIDE WORKER: ClassNotFoundException!");
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
 		}
+		
+		if (request != null) {
+			Object res = runMethod(request.getMethodName(), request.getArgs());
+			RMIData response = new RMIData(res, null);			
+			try {
+				oStream.writeObject(response);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				System.out.println("==========IOException in Worker:run()==========");
+			}
+		}
+		
+		try {
+			client.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			System.out.println("==========IOException in Worker:run()CLOSE CLIENT==========");
+		} 
 	}	
 	
 	/**
@@ -116,6 +107,7 @@ public class Worker<T> extends Thread {
 		} catch (NoSuchMethodException | SecurityException e1) {
 			// TODO Auto-generated catch block
 			//e1.printStackTrace();
+			System.out.println("==========Exp when runMethod1==========");
 		}
 		if (targetMethod != null) {
 			try {
@@ -123,6 +115,7 @@ public class Worker<T> extends Thread {
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
+				System.out.println("==========Exp when runMethod2==========");
 			}
 		}
 		return res;

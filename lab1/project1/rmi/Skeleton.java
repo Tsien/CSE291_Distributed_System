@@ -34,7 +34,7 @@ public class Skeleton<T>
 	/**
 	 * A boolean variable to indicate whether the server is running
 	 */
-	public boolean isRunning;
+	private boolean isRunning;
 	
 	/**
 	 * a Thread Pooled Server 
@@ -102,7 +102,7 @@ public class Skeleton<T>
         this.setAddress(null);
         this.setRmtItface(c);
         this.setRmtObject(server);
-        this.isRunning = false;
+        this.setIsRunning(false);
     }
 
     /** Creates a <code>Skeleton</code> with the given initial server address.
@@ -138,7 +138,7 @@ public class Skeleton<T>
         this.setAddress(address);
         this.setRmtItface(c);
         this.setRmtObject(server);
-        this.isRunning = false;
+        this.setIsRunning(false);
     }
 
     /** Called when the listening thread exits.
@@ -198,7 +198,7 @@ public class Skeleton<T>
 		System.out.println("************");
     	System.out.println("Exception on the server end:");
 		System.out.println("************");
-    	exception.printStackTrace();
+    	//exception.printStackTrace();
     }
 
     /** Starts the skeleton server.
@@ -216,20 +216,18 @@ public class Skeleton<T>
      */
     public synchronized void start() throws RMIException
     {
-    	if (!this.isRunning) {
-	    	this.isRunning = true;
+    	if (!this.getIsRunning()) {
+	    	this.setIsRunning(true);
     		try {
     			// open server socket
     			if (this.myAddress == null) {
     				//use port 0 to choose a random port number from 1024
     				serverSocket = new ServerSocket(0, poolSize);
     				myAddress = (InetSocketAddress)serverSocket.getLocalSocketAddress();
-
     			}
     			else {
     				serverSocket = new ServerSocket(myAddress.getPort(), poolSize, myAddress.getAddress());
-    			}
-    			
+    			}    			
     			System.out.println("************");
     			System.out.println("IP:" + serverSocket.getLocalSocketAddress() + ", Port:" + serverSocket.getLocalPort());
     			System.out.println("************");
@@ -241,8 +239,8 @@ public class Skeleton<T>
     			System.out.println("Fail to open a server socket!");
     			System.out.println("************");
     			//e.printStackTrace();
+    			throw new RMIException(e);
     		}    		
-
     	}
     	else {
     		throw new RMIException("Error: The server is already running!");
@@ -263,23 +261,17 @@ public class Skeleton<T>
     	myServer = null;
     	this.isRunning = false;
 
-    	try { 
-            if(!serverSocket.isClosed()) {
-                System.out.println("-------not closed.. going to close---------");
-			serverSocket.close();
-        }
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-            System.out.println("-------STOP---------");
-		//	e.printStackTrace();
-		} catch(NullPointerException e){
-            System.out.println("-------NullPointerException---------");
-        }
-
-        stopped(null);
- System.out.println("-------going to exit!--------");
-        
-    	
+    	if (serverSocket != null && !serverSocket.isClosed()) {
+	    	try {
+				serverSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				System.out.println("==========IOException in stop()==========");
+				//e.printStackTrace();
+			}
+    	}
+    	serverSocket = null;
+    	stopped(null);
     }
     
 	public InetSocketAddress getAddress() {
@@ -308,5 +300,13 @@ public class Skeleton<T>
 
 	public int getPoolSize() {
 		return poolSize;
+	}
+	
+	public synchronized boolean getIsRunning() {
+		return this.isRunning;
+	}
+	
+	public synchronized void setIsRunning(boolean sign) {
+		this.isRunning = sign;
 	}
 }

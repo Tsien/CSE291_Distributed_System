@@ -21,11 +21,14 @@ import java.util.concurrent.Executors;
  */
 public class Listener<T> extends Thread {		
 	/**
+<<<<<<< HEAD
+=======
 	 * A sign to indicate whether the server is active
 	 */
 	private boolean         isActive = false;
 	
 	/**
+>>>>>>> a6b52ba23c0a47a115ed5155f700e8a3b71a7b1d
 	 * The server's socket
 	 */
 	private ServerSocket    serverSocket;
@@ -56,26 +59,26 @@ public class Listener<T> extends Thread {
 	 */
 	@Override
 	public void run() {		
-		this.isActive = true;
-
-		while (isActive() && localObj.isRunning) {
-
+		while (this.localObj.getIsRunning()) {
 			Socket client = null;		
 			try {
 				// Wait for the Client Request
 				client = serverSocket.accept();
 				System.out.println("Listener accepted!");
 			} catch (IOException e) {
-				/*
-				if (!isActive()) {
-					System.out.println("******-----*");
-					System.out.println("The Server is stopped!");
-					System.out.println("************");
-					break;
+				if (!this.localObj.getIsRunning()) {
+					System.out.println("The server is stopped..");
 				}
 				// TODO Auto-generated catch block
-				//e.printStackTrace(); */
+				//e.printStackTrace(); 
+				System.out.println("==========IOException in Listener:run()==========");
 			}
+
+			if (this.localObj.getIsRunning()) {
+				// for execution when a thread in the pool becomes idle.
+				this.threadPool.execute(new Worker<T>(client, localObj));
+			}
+
 			// for execution when a thread in the pool becomes idle.
 			System.out.println("Starting service thread!");
 			this.threadPool.execute(new Worker<T>(client, localObj));
@@ -84,6 +87,7 @@ public class Listener<T> extends Thread {
 		
 		// shut down thread pool
 		//this.threadPool.shutdownNow();
+
 		//System.out.println("************");
 		//System.out.println("The Server stopped normally!");
 		//System.out.println("************");
@@ -91,19 +95,10 @@ public class Listener<T> extends Thread {
 		//this.terminate();
 	}
 	
-	/**
-	 * Checks whether the server is still active
-	 * @return A sign to indicate whether the server is active
-	 */
-    private synchronized boolean isActive() {
-        return this.isActive;
-    }
-
     /**
      * Shuts down the server
      */
     public synchronized void terminate(){
-        this.isActive = false;
         localObj.stop();
     }
 }

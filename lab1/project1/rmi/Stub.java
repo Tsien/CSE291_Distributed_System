@@ -1,5 +1,6 @@
 package rmi;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -75,26 +76,32 @@ public abstract class Stub
 			RMIData request = null;
 			RMIData response = null;
 			// TODO try/catch exceptions
-			System.out.println("************");
-			System.out.println("Host:" + serverAddress.getAddress() + " , Port:" + serverAddress.getPort());
-			System.out.println("************");
 			try {
 				client.connect(serverAddress);
-			} catch (Exception e){
-				e.printStackTrace();
+				oStream = new ObjectOutputStream(client.getOutputStream());
+				oStream.flush();			
+				iStream = new ObjectInputStream(client.getInputStream());
+				System.out.println("==============OPEN I_STREAM============");
+				request = new RMIData(myClass.getName(), method.getName(), args, null, null);
+				oStream.writeObject(request);
+				response = (RMIData) iStream.readObject();
+				client.close();				
+			} catch (IOException e){
+				System.out.println("==============IO_EXCEPTION============");				
+				//e.printStackTrace();
+				throw (Throwable) (new RMIException(e));
 			}
-			oStream = new ObjectOutputStream(client.getOutputStream());
-			oStream.flush();
-			iStream = new ObjectInputStream(client.getInputStream());
-			request = new RMIData(myClass.getName(), method.getName(), args, null, null);
-			oStream.writeObject(request);
-			response = (RMIData) iStream.readObject();
-			client.close();
-			Object res = response.getResult();
-			if (res == null) {
-				throw response.getException();
+						
+			System.out.println("==============CLIENT CLOSE============");
+			
+			if (response != null) {
+				Object res = response.getResult();
+				if (res == null) {
+					throw response.getException();
+				}
+				return res;
 			}
-			return res;
+			return null;
 		}
     } 
 
@@ -185,7 +192,8 @@ public abstract class Stub
         }
         InetSocketAddress address = skeleton.getAddress();
         if (address == null) {
-        	throw new IllegalStateException("The skeleton has not been assigned an address by the user and has not yet been started.");
+        	throw new IllegalStateException("The skeleton has not been assigned an address" + 
+        									" by the user and has not yet been started.");
         }
 		return create(c, new InetSocketAddress(hostname, address.getPort()));
     }
