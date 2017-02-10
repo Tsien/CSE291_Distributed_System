@@ -34,7 +34,7 @@ public class Skeleton<T>
 	/**
 	 * A boolean variable to indicate whether the server is running
 	 */
-	private boolean isRunning;
+	public boolean isRunning;
 	
 	/**
 	 * a Thread Pooled Server 
@@ -161,7 +161,7 @@ public class Skeleton<T>
      */
     protected void stopped(Throwable cause)
     {
-    	// TODO ???
+    
     }
 
     /** Called when an exception occurs at the top level in the listening
@@ -224,6 +224,7 @@ public class Skeleton<T>
     				//use port 0 to choose a random port number from 1024
     				serverSocket = new ServerSocket(0, poolSize);
     				myAddress = (InetSocketAddress)serverSocket.getLocalSocketAddress();
+
     			}
     			else {
     				serverSocket = new ServerSocket(myAddress.getPort(), poolSize, myAddress.getAddress());
@@ -239,7 +240,7 @@ public class Skeleton<T>
     			System.out.println("************");
     			System.out.println("Fail to open a server socket!");
     			System.out.println("************");
-    			e.printStackTrace();
+    			//e.printStackTrace();
     		}    		
 
     	}
@@ -261,13 +262,24 @@ public class Skeleton<T>
     {
     	myServer = null;
     	this.isRunning = false;
-    	try {
+
+    	try { 
+            if(!serverSocket.isClosed()) {
+                System.out.println("-------not closed.. going to close---------");
 			serverSocket.close();
+        }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	serverSocket = null;
+            System.out.println("-------STOP---------");
+		//	e.printStackTrace();
+		} catch(NullPointerException e){
+            System.out.println("-------NullPointerException---------");
+        }
+
+        stopped(null);
+ System.out.println("-------going to exit!--------");
+        
+    	
     }
     
 	public InetSocketAddress getAddress() {

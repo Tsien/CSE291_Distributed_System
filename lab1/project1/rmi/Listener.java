@@ -23,7 +23,7 @@ public class Listener<T> extends Thread {
 	/**
 	 * A sign to indicate whether the server is active
 	 */
-	private boolean         isActive;
+	private boolean         isActive = false;
 	
 	/**
 	 * The server's socket
@@ -57,32 +57,38 @@ public class Listener<T> extends Thread {
 	@Override
 	public void run() {		
 		this.isActive = true;
-		while (isActive()) {
+
+		while (isActive() && localObj.isRunning) {
+
 			Socket client = null;		
 			try {
 				// Wait for the Client Request
 				client = serverSocket.accept();
+				System.out.println("Listener accepted!");
 			} catch (IOException e) {
+				/*
 				if (!isActive()) {
-					System.out.println("************");
+					System.out.println("******-----*");
 					System.out.println("The Server is stopped!");
 					System.out.println("************");
 					break;
 				}
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//e.printStackTrace(); */
 			}
 			// for execution when a thread in the pool becomes idle.
+			System.out.println("Starting service thread!");
 			this.threadPool.execute(new Worker<T>(client, localObj));
+			System.out.println("Started service thread!");
 		}
 		
 		// shut down thread pool
-		this.threadPool.shutdownNow();
-		System.out.println("************");
-		System.out.println("The Server stopped normally!");
-		System.out.println("************");
+		//this.threadPool.shutdownNow();
+		//System.out.println("************");
+		//System.out.println("The Server stopped normally!");
+		//System.out.println("************");
 		// close socket connection
-		this.terminate();
+		//this.terminate();
 	}
 	
 	/**

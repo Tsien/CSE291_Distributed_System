@@ -36,7 +36,7 @@ public class SkeletonTest extends Test
 
     /** Creates a <code>SkeletonTest</code> object. */
     public SkeletonTest()
-    {
+    {   
         address = new InetSocketAddress(7000);
         dummy_server = new BadInterfaceImplementation();
         server = new TestServer();
@@ -47,11 +47,12 @@ public class SkeletonTest extends Test
     /** Performs the test. */
     @Override
     protected void perform() throws TestFailed
-    {
+    {   
         ensureClassRejected();
         ensureNonRemoteInterfaceRejected();
         ensureNullPointerExceptions();
         ensureSkeletonRuns();
+        System.out.println("-------DONE----------");
     }
 
     /** Performs tests with a running skeleton.
@@ -64,10 +65,11 @@ public class SkeletonTest extends Test
     {
         if(probe())
             throw new TestFailed("skeleton accepts connections before start");
-
+        
         try
         {
             skeleton.start();
+            System.out.println("-------Skeleton STARTED----------");
         }
         catch(RMIException e)
         {
@@ -78,6 +80,7 @@ public class SkeletonTest extends Test
             throw new TestFailed("skeleton refuses connections after start");
 
         skeleton.stop();
+        System.out.println("-------Skeleton STOPPEDD----------");
 
         synchronized(this)
         {
@@ -93,7 +96,7 @@ public class SkeletonTest extends Test
 
         if(probe())
             throw new TestFailed("skeleton accepts connections after stop");
-    }
+   }
 
     /** Wakes <code>ensureSkeletonRuns</code>. */
     private synchronized void wake()
@@ -117,6 +120,9 @@ public class SkeletonTest extends Test
         }
         catch(Exception e)
         {
+            System.out.println("**********************");
+            System.out.println(e.toString());
+            // throw new RuntimeException(, e);
             return false;
         }
 
@@ -133,9 +139,11 @@ public class SkeletonTest extends Test
         test main thread. */
     @Override
     protected void clean()
-    {
+    {    System.out.println("CLEAN");
         skeleton.stop();
+        System.out.println("-------Skeleton STOPPED AGAIN----------");
         wake();
+        System.out.println("CLEAN 2");
     }
 
     /** Ensures that a <code>Skeleton</code> cannot be constructed from a class

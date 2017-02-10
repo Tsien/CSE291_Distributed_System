@@ -694,6 +694,7 @@ public class Series implements Serializable
         @Override
         public void run()
         {
+            
             state.stopCleanup(new FatalError("clean method timed out"));
         }
     }
