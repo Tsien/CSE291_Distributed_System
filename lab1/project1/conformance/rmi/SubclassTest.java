@@ -44,6 +44,7 @@ public class SubclassTest
         catch(TestFailed e) { throw e; }
         catch(Throwable t)
         {
+        	System.out.println("======Subclss: throw=========");
             throw new TestFailed("unexpected exception when calling " +
                                  "server superclass method", t);
         }

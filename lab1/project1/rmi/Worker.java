@@ -76,7 +76,7 @@ public class Worker<T> extends Thread {
 		}
 		
 		if (request != null) {
-			RMIData response = runMethod(request.getMethodName(), request.getArgs(), request.getArgsType());
+			RMIData response = runMethod(request);
 			try {
 				oStream.writeObject(response);
 			} catch (IOException e) {
@@ -101,8 +101,13 @@ public class Worker<T> extends Thread {
 	 * @param args An array of objects containing the values of the arguments passed in the method 
 	 * @return An object, the return value of the method call
 	 */
-	private RMIData runMethod(String methodName, Object[] args, Class<?>[] argsType) {
-		// TODO how to find the right method? 
+	private RMIData runMethod(RMIData request) {
+		// TODO how to find the right method?
+		String methodName = request.getMethodName();
+		String className = request.getClassName();
+		String itfName = skt.getRmtItface().getName();
+		Object[] args = request.getArgs(); 
+		Class<?>[] argsType = request.getArgsType();
 		Object val = null;
 		Class<?> objClass = localObj.getClass();
 		Method targetMethod = null;
@@ -111,7 +116,7 @@ public class Worker<T> extends Thread {
 		}
 		try {
 			System.out.println("********" + methodName + " in " + objClass.getName() + "*****");
-			targetMethod = objClass.getDeclaredMethod(methodName, argsType);
+			targetMethod = objClass.getMethod(methodName, argsType);
 		} catch (NoSuchMethodException | SecurityException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -119,9 +124,14 @@ public class Worker<T> extends Thread {
 			return new RMIData(null, e1);
 		}
 		if (targetMethod != null) {
+			if (!className.equals(itfName)) {
+				return new RMIData(null, new RMIException("calling method not declared in the interface for which the skeleton was created"));
+			}
 			try {
 				System.out.println("==========Worker: class:" + localObj.getClass().getName());
+				System.out.println("==========Worker: class:" + itfName);
 				System.out.println("==========Worker: method: " + targetMethod.getName());
+				System.out.println("==========Worker: method: " + className);
 				targetMethod.setAccessible(true);
 				val = targetMethod.invoke(localObj, args);
 			} catch (InvocationTargetException e1) {

@@ -70,7 +70,10 @@ public abstract class Stub
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			String methodName = method.getName();
-			if (methodName.equals("equals")) {
+			int len = method.getParameterTypes().length;
+			if (methodName.equals("equals") && len >= 1
+					&& method.getReturnType().getName().equals("boolean")
+					&& method.getParameterTypes()[0].getName().equals("java.lang.Object")) {
 				System.out.println("=====Stub: checking equals==========");
 				if (args[0] == null) {
 					return false;
@@ -93,10 +96,12 @@ public abstract class Stub
 			String msg = "INTERFACE_NAME: " + myClass.getName() + 
 					", IP: " + serverAddress.getAddress() + 
 					", PORT: " + serverAddress.getPort();
-			if (methodName.equals("toString")) {
+			if (methodName.equals("toString") && len == 0
+					&& method.getReturnType().getName().equals("java.lang.String")) {
 				return msg;
 			}
-			else if (methodName.equals("hashCode")) {
+			else if (methodName.equals("hashCode") && len == 0
+					&& method.getReturnType().getName().equals("int")) {
 				return msg.hashCode();
 			}
 			
