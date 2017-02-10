@@ -64,15 +64,16 @@ public class Worker<T> extends Thread {
 			request = (RMIData)iStream.readObject();
 			System.out.println("INSIDE WORKER: REMOTE METHOD NAME is : " + request.getMethodName());
 			// TODO what if rmiData.className != T
-		} catch (IOException e) {
+		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			System.out.println("INSIDE WORKER: IOException!");
 			//e.printStackTrace();
-			skt.service_error(new RMIException(e));
+			skt.service_error(new RMIException(e1));
 		} catch (ClassNotFoundException e) {
 			System.out.println("INSIDE WORKER: ClassNotFoundException!");
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
+			skt.service_error(new RMIException(e));
 		}
 		
 		if (request != null) {
@@ -83,6 +84,7 @@ public class Worker<T> extends Thread {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
 				System.out.println("==========IOException in Worker:run()==========");
+				skt.service_error(new RMIException(e));
 			}
 		}
 		
@@ -92,6 +94,7 @@ public class Worker<T> extends Thread {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
 			System.out.println("==========IOException in Worker:run()CLOSE CLIENT==========");
+			skt.service_error(new RMIException(e));
 		} 
 	}	
 	
@@ -121,10 +124,12 @@ public class Worker<T> extends Thread {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			System.out.println("==========Worker: Exp when runMethod1==========");
+			skt.service_error(new RMIException(e1));
 			return new RMIData(null, e1);
 		}
 		if (targetMethod != null) {
 			if (!className.equals(itfName)) {
+				skt.service_error(new RMIException(new NoSuchMethodException("calling method not declared in the interface for which the skeleton was created")));
 				return new RMIData(null, new RMIException("calling method not declared in the interface for which the skeleton was created"));
 			}
 			try {
@@ -140,6 +145,7 @@ public class Worker<T> extends Thread {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				System.out.println("==========Worker: Exp when runMethod2==========");
+				skt.service_error(new RMIException(e));
 				return new RMIData(null, new RMIException(e));
 			}
 		}

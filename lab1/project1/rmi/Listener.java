@@ -47,7 +47,8 @@ public class Listener<T> extends Thread {
 	}
 	
 	/**
-	 * The tasks for the {@code Listener} thread
+	 * Listen for connections and then create a new thread to deal with the request
+	 * 
 	 */
 	@Override
 	public void run() {		
@@ -55,9 +56,6 @@ public class Listener<T> extends Thread {
 			Socket client = null;		
 			try {
 				// Wait for the Client Request
-				System.out.println("************");
-				System.out.println("IP:" + serverSocket.getLocalSocketAddress() + ", Port:" + serverSocket.getLocalPort());
-				System.out.println("************");
 				client = serverSocket.accept();
 				System.out.println("Listener accepted!");
 				if (this.localObj.getIsRunning()) {
@@ -70,17 +68,17 @@ public class Listener<T> extends Thread {
 				if (!this.localObj.getIsRunning()) {
 					System.out.println("The server is stopped..");
 				}
+				else {
+					this.localObj.stop();
+				}
 				this.localObj.service_error(new RMIException(e));
 				// TODO Auto-generated catch block
-				e.printStackTrace(); 
+				//e.printStackTrace(); 
 				System.out.println("==========Listener: IOException in run()==========");
 			}
 		}
 		
 		// shut down thread pool
-		//this.threadPool.shutdownNow();
-
-		// close socket connection
-		//this.localObj.stop();
+		this.threadPool.shutdownNow();
 	}	
 }

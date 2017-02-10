@@ -85,16 +85,21 @@ public abstract class Stub
 				if (!(handler instanceof MyInvocationHandler)) {
 					return false;
 				}
-				if (!(serverAddress.equals(((MyInvocationHandler)handler).serverAddress))) {
+				// they should implement the same remote interface
+				if (!(myClass.getName().equals(((MyInvocationHandler)handler).myClass.getName()))) {
 					return false;
 				}
-				if (!(myClass.getName().equals(((MyInvocationHandler)handler).myClass.getName()))) {
+				// they should connect to the same skeleton
+				if (!(serverAddress.equals(((MyInvocationHandler)handler).serverAddress))) {
 					return false;
 				}
 				return true;
 			} 
+			//The toString method should report the name of the remote interface 
+			//implemented by the stub, and the remote address (including hostname 
+			//and port) of the skeleton to which the stub connects.
 			String msg = "INTERFACE_NAME: " + myClass.getName() + 
-					", IP: " + serverAddress.getAddress() + 
+					", Hostname: " + serverAddress.getHostName() + 
 					", PORT: " + serverAddress.getPort();
 			if (methodName.equals("toString") && len == 0
 					&& method.getReturnType().getName().equals("java.lang.String")) {
@@ -184,7 +189,8 @@ public abstract class Stub
         }
         InetSocketAddress address = skeleton.getAddress();
         if (address == null) {
-        	throw new IllegalStateException("The skeleton has not been assigned an address by the user and has not yet been started.");
+        	throw new IllegalStateException("The skeleton has not been assigned an address" + 
+					" by the user and has not yet been started.");
         }
 		return create(c, address);
     }

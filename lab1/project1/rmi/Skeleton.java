@@ -64,7 +64,7 @@ public class Skeleton<T>
 	private T rmtObject;
 		
 	/**
-	 * The number of threads in the thread pool
+	 * The max number of threads in the thread pool
 	 */
 	private int poolSize = 10;
 	
@@ -195,9 +195,7 @@ public class Skeleton<T>
     protected void service_error(RMIException exception)
     {
     	// TODO
-		System.out.println("************");
-    	System.out.println("Exception on the server end:");
-		System.out.println("************");
+    	System.out.println("==========Exception on the server end============");
     	exception.printStackTrace();
     }
 
@@ -228,16 +226,11 @@ public class Skeleton<T>
     			else {
     				serverSocket = new ServerSocket(myAddress.getPort(), poolSize, myAddress.getAddress());
     			}    			
-    			System.out.println("************");
-    			System.out.println("IP:" + serverSocket.getLocalSocketAddress() + ", Port:" + serverSocket.getLocalPort());
-    			System.out.println("************");
         		myServer = new Listener<T>(this); 
     	    	myServer.start();
     		} catch (IOException e) {
     			// TODO Auto-generated catch block
-    			System.out.println("************");
-    			System.out.println("Fail to open a server socket!");
-    			System.out.println("************");
+    			System.out.println("======Skeleton: Fail to open a server socket!==========");
     			//e.printStackTrace();
     			throw new RMIException(e);
     		}    		
@@ -267,47 +260,84 @@ public class Skeleton<T>
 				serverSocket.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				System.out.println("==========IOException in stop()==========");
-				//e.printStackTrace();
+				System.out.println("==========Skeleton: IOException in stop()==========");
+				e.printStackTrace();
 			}
     	}
     	serverSocket = null;
+    	// stop normally
     	stopped(null);
-    	System.out.println("Skeleton: The server is closed!");
+    	System.out.println("Skeleton: The server is stopped!");
     }
     
+    /**
+     * Return server socket address
+     * @return server socket address
+     */
 	public InetSocketAddress getAddress() {
 		return myAddress;
 	}
 
+	/**
+	 * Set server socket address
+	 * @param address
+	 */
 	public void setAddress(InetSocketAddress address) {
 		this.myAddress = address;
 	}
 
+	/**
+	 * Return remote object on the server
+	 * @return remote object on the server
+	 */
 	public T getRmtObject() {
 		return rmtObject;
 	}
 
+	/**
+	 * Set remote object on the server
+	 * @param rmtObject
+	 */
 	public void setRmtObject(T rmtObject) {
 		this.rmtObject = rmtObject;
 	}
 
+	/**
+	 * Return remote Interface on the server
+	 * @return remote Interface on the server
+	 */
 	public Class<T> getRmtItface() {
 		return rmtItface;
 	}
 
+	/**
+	 * Set remote Interface on the server
+	 * @param rmtItface
+	 */
 	public void setRmtItface(Class<T> rmtItface) {
 		this.rmtItface = rmtItface;
 	}
 
+	/**
+	 * Return The max number of threads in the thread pool
+	 * @return poolSize
+	 */
 	public int getPoolSize() {
 		return poolSize;
 	}
 	
+	/**
+	 * Return the indicator whether the server is running 
+	 * @return isRunning
+	 */
 	public synchronized boolean getIsRunning() {
 		return this.isRunning;
 	}
 	
+	/**
+	 * Set the indicator
+	 * @param sign
+	 */
 	public synchronized void setIsRunning(boolean sign) {
 		this.isRunning = sign;
 	}
