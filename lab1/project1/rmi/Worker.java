@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
-import java.util.ArrayList;
 
 /**
  * The worker processes each request from the client.
@@ -27,7 +26,7 @@ public class Worker<T> extends Thread {
 	/**
 	 * The real local object on the server
 	 */
-	public T localObj;
+	private T localObj;
 
 	/**
 	 * Constructor for {@code Worker}
@@ -95,7 +94,7 @@ public class Worker<T> extends Thread {
 	 * @param args An array of objects containing the values of the arguments passed in the method 
 	 * @return An object, the return value of the method call
 	 */
-	public RMIData runMethod(String methodName, Object[] args, Class<?>[] argsType) {
+	private RMIData runMethod(String methodName, Object[] args, Class<?>[] argsType) {
 		// TODO how to find the right method? 
 		Object val = null;
 		Class<?> objClass = localObj.getClass();

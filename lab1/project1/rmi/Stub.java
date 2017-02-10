@@ -69,6 +69,37 @@ public abstract class Stub
  		 */
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			String methodName = method.getName();
+			if (methodName.equals("equals")) {
+				if (proxy == null) {
+					return false;
+				}
+				if (!Proxy.isProxyClass(proxy.getClass())) {
+					return false;
+				}
+				InvocationHandler handler = Proxy.getInvocationHandler(proxy);
+				if (!(handler instanceof MyInvocationHandler)) {
+					return false;
+				}
+				if (!(serverAddress.equals(((MyInvocationHandler)handler).serverAddress))) {
+					return false;
+				}
+				if (!(myClass.getName().equals(((MyInvocationHandler)handler).myClass.getName()))) {
+					return false;
+				}
+				
+				return true;
+			} 
+			String msg = "INTERFACE_NAME: " + myClass.getName() + 
+					", IP: " + serverAddress.getAddress() + 
+					", PORT: " + serverAddress.getPort();
+			if (methodName.equals("toString")) {
+				return msg;
+			}
+			else if (methodName.equals("toString")) {
+				return msg.hashCode();
+			}
+			
 			// TODO Auto-generated method stub
 			Socket client = new Socket();
 			ObjectInputStream iStream = null;
