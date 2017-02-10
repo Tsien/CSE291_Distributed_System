@@ -198,7 +198,7 @@ public class Skeleton<T>
 		System.out.println("************");
     	System.out.println("Exception on the server end:");
 		System.out.println("************");
-    	//exception.printStackTrace();
+    	exception.printStackTrace();
     }
 
     /** Starts the skeleton server.

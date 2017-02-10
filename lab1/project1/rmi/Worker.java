@@ -19,6 +19,11 @@ import java.net.Socket;
  */
 public class Worker<T> extends Thread {
 	/**
+	 * The skeleton
+	 */
+	private Skeleton<T> skt;
+	
+	/**
 	 * The client socket
 	 */
 	private Socket client;
@@ -36,6 +41,7 @@ public class Worker<T> extends Thread {
 	public Worker(Socket ct, Skeleton<T> obj) {
 		client = ct;
 		localObj = obj.getRmtObject();
+		skt = obj;
 	}
 
 	/**
@@ -62,6 +68,7 @@ public class Worker<T> extends Thread {
 			// TODO Auto-generated catch block
 			System.out.println("INSIDE WORKER: IOException!");
 			//e.printStackTrace();
+			skt.service_error(new RMIException(e));
 		} catch (ClassNotFoundException e) {
 			System.out.println("INSIDE WORKER: ClassNotFoundException!");
 			// TODO Auto-generated catch block

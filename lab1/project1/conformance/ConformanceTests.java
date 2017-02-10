@@ -42,12 +42,12 @@ public class ConformanceTests
                          conformance.rmi.HashCodeTest.class,
                          conformance.rmi.ToStringTest.class,
                          conformance.rmi.SerializableTest.class,
-                         conformance.rmi.OverloadTest.class,
+                         conformance.rmi.OverloadTest.class/*,
                          conformance.rmi.ShadowTest.class,
                          conformance.rmi.InheritanceTest.class,
                          conformance.rmi.SubclassTest.class,
                          conformance.rmi.SecurityTest.class,
-                         conformance.rmi.ThreadTest.class};
+                         conformance.rmi.ThreadTest.class*/};
 
         Series                      series = new Series(tests);
         SeriesReport                report = series.run(3, System.out);

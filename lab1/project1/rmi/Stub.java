@@ -71,13 +71,14 @@ public abstract class Stub
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			String methodName = method.getName();
 			if (methodName.equals("equals")) {
-				if (proxy == null) {
+				System.out.println("=====Stub: checking equals==========");
+				if (args[0] == null) {
 					return false;
 				}
-				if (!Proxy.isProxyClass(proxy.getClass())) {
+				if (!Proxy.isProxyClass(args[0].getClass())) {
 					return false;
 				}
-				InvocationHandler handler = Proxy.getInvocationHandler(proxy);
+				InvocationHandler handler = Proxy.getInvocationHandler(args[0]);
 				if (!(handler instanceof MyInvocationHandler)) {
 					return false;
 				}
@@ -87,7 +88,6 @@ public abstract class Stub
 				if (!(myClass.getName().equals(((MyInvocationHandler)handler).myClass.getName()))) {
 					return false;
 				}
-				
 				return true;
 			} 
 			String msg = "INTERFACE_NAME: " + myClass.getName() + 
@@ -96,7 +96,7 @@ public abstract class Stub
 			if (methodName.equals("toString")) {
 				return msg;
 			}
-			else if (methodName.equals("toString")) {
+			else if (methodName.equals("hashCode")) {
 				return msg.hashCode();
 			}
 			

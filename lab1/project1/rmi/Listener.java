@@ -70,6 +70,7 @@ public class Listener<T> extends Thread {
 				if (!this.localObj.getIsRunning()) {
 					System.out.println("The server is stopped..");
 				}
+				this.localObj.service_error(new RMIException(e));
 				// TODO Auto-generated catch block
 				e.printStackTrace(); 
 				System.out.println("==========Listener: IOException in run()==========");
