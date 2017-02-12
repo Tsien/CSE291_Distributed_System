@@ -1,19 +1,19 @@
 docker stop pingserver
 docker stop pingclient
-docker stop files
+docker stop data
 docker network rm myNetwork
-docker rm files
 docker rm pingserver
 docker rm pingclient
+docker rm data
 
-javac ./docker/server/*.java
-javac ./docker/client/*.java
+javac ./rmi/client/*.java
+javac ./rmi/server/*.java
 
-docker build -t rmi_docker ./rmi_docker
+docker build -t rmi ./rmi
 
 docker network create -d bridge myNetwork
+docker create -v /data --name data rmi /bin/true
 
-pingserver_ip=`docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' pingserver`
-
-docker run -d --net=myNetwork  --name pingserver --volumes-from files rmi_docker java ./files . 7000
-docker run -d --net=myNetwork  --name pingclient --volumes-from files rmi_docker java ./files .CatClient pingserver_ip catserver 7000
+pingserver_ip='docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' pingserver'
+docker run -d --net=myNetwork  --name pingserver --volumes-from data rmi java data.server 7000
+docker run -d --net=myNetwork  --name pingclient --volumes-from data rmi java data.client pingserver_ip 7000
