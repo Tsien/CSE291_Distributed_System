@@ -118,6 +118,8 @@ public abstract class Stub
 			RMIData response = null;
 			// TODO try/catch exceptions
 			try {
+				System.out.println("========IP:" + serverAddress.getAddress() + " , Port:" +
+									serverAddress.getPort() + " ========================");
 				client.connect(serverAddress);
 				oStream = new ObjectOutputStream(client.getOutputStream());
 				oStream.flush();			

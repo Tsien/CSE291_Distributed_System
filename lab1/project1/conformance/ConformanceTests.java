@@ -33,7 +33,7 @@ public class ConformanceTests
                          conformance.rmi.NullTest.class,
                          conformance.rmi.RemoteInterfaceTest.class,
                          conformance.rmi.ListenTest.class,
-                         conformance.rmi.RestartTest.class,
+                         conformance.rmi.RestartTest.class/*,
                          conformance.rmi.NoAddressTest.class,
                          conformance.rmi.ServiceErrorTest.class,
                          conformance.rmi.StubTest.class,
@@ -46,7 +46,7 @@ public class ConformanceTests
                          conformance.rmi.InheritanceTest.class,
                          conformance.rmi.SubclassTest.class,
                          conformance.rmi.SecurityTest.class,
-                         conformance.rmi.ThreadTest.class};
+                         conformance.rmi.ThreadTest.class*/};
 
         Series                      series = new Series(tests);
         SeriesReport                report = series.run(3, System.out);

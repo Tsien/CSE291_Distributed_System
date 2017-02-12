@@ -8,9 +8,10 @@ import rmi.Stub;
 public class Client {
 	public static void main(String[] args) {
 		System.out.println("==============Tests==============");
-		int port = Integer.parseInt(args[0]);
+		String IP = args[0];
+		int port = Integer.parseInt(args[1]);
 		IntPingPongServer server = Stub.create(IntPingPongServer.class,
-											   new InetSocketAddress(port));
+											   new InetSocketAddress(IP, port));
 		int count = 0;
 		for(int i=1;i<=4;i++){
 			String expectedStr = "Pong " + i;
