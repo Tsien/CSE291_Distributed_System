@@ -57,16 +57,16 @@ public class Listener<T> extends Thread {
 			try {
 				// Wait for the Client Request
 				client = serverSocket.accept();
-				System.out.println("Listener accepted!");
+				// System.out.println("Listener accepted!");
 				if (this.localObj.getIsRunning()) {
 					// for execution when a thread in the pool becomes idle.
-					System.out.println("Starting service thread!");
+					// System.out.println("Starting service thread!");
 					this.threadPool.execute(new Worker<T>(client, localObj));
-					System.out.println("Started service thread!");
+					// System.out.println("Started service thread!");
 				}
 			} catch (IOException e) {
 				if (!this.localObj.getIsRunning()) {
-					System.out.println("The server is stopped..");
+					// System.out.println("The server is stopped..");
 				}
 				else {
 					this.localObj.stop();
@@ -74,7 +74,7 @@ public class Listener<T> extends Thread {
 				this.localObj.service_error(new RMIException(e));
 				// TODO Auto-generated catch block
 				//e.printStackTrace(); 
-				System.out.println("==========Listener: IOException in run()==========");
+				// System.out.println("==========Listener: IOException in run()==========");
 			}
 		}
 		

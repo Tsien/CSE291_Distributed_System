@@ -195,7 +195,7 @@ public class Skeleton<T>
     protected void service_error(RMIException exception)
     {
     	// TODO
-    	System.out.println("==========Exception on the server end============");
+    	// System.out.println("==========Exception on the server end============");
     	exception.printStackTrace();
     }
 
@@ -230,8 +230,8 @@ public class Skeleton<T>
     	    	myServer.start();
     		} catch (IOException e) {
     			// TODO Auto-generated catch block
-    			System.out.println("======Skeleton: Fail to open a server socket!==========");
-    			//e.printStackTrace();
+    			// System.out.println("======Skeleton: Fail to open a server socket!==========");
+    			// e.printStackTrace();
     			throw new RMIException(e);
     		}    		
     	}
@@ -251,7 +251,10 @@ public class Skeleton<T>
      */
     public synchronized void stop()
     {
-    	System.out.println("Skeleton: The server is closing...");
+    	if (!this.isRunning) {
+    		return ;
+    	}
+    	// System.out.println("Skeleton: The server is closing...");
     	myServer = null;
     	this.isRunning = false;
 
@@ -260,14 +263,14 @@ public class Skeleton<T>
 				serverSocket.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				System.out.println("==========Skeleton: IOException in stop()==========");
+				// System.out.println("==========Skeleton: IOException in stop()==========");
 				e.printStackTrace();
 			}
     	}
     	serverSocket = null;
     	// stop normally
     	stopped(null);
-    	System.out.println("Skeleton: The server is stopped!");
+    	// System.out.println("Skeleton: The server is stopped!");
     }
     
     /**

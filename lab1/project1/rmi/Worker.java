@@ -56,21 +56,21 @@ public class Worker<T> extends Thread {
 		RMIData request = null;
 
 		try {
-			System.out.println("INSIDE WORKER TRY!");
+			// System.out.println("INSIDE WORKER TRY!");
 			oStream = new ObjectOutputStream(client.getOutputStream());
 			oStream.flush();
 			iStream = new ObjectInputStream(client.getInputStream());
 			// Read object from stream
 			request = (RMIData)iStream.readObject();
-			System.out.println("INSIDE WORKER: REMOTE METHOD NAME is : " + request.getMethodName());
+			// System.out.println("INSIDE WORKER: REMOTE METHOD NAME is : " + request.getMethodName());
 			// TODO what if rmiData.className != T
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			System.out.println("INSIDE WORKER: IOException!");
+			// System.out.println("INSIDE WORKER: IOException!");
 			//e.printStackTrace();
 			skt.service_error(new RMIException(e1));
 		} catch (ClassNotFoundException e) {
-			System.out.println("INSIDE WORKER: ClassNotFoundException!");
+			// System.out.println("INSIDE WORKER: ClassNotFoundException!");
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
 			skt.service_error(new RMIException(e));
@@ -83,7 +83,7 @@ public class Worker<T> extends Thread {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
-				System.out.println("==========IOException in Worker:run()==========");
+				// System.out.println("==========IOException in Worker:run()==========");
 				skt.service_error(new RMIException(e));
 			}
 		}
@@ -93,7 +93,7 @@ public class Worker<T> extends Thread {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
-			System.out.println("==========IOException in Worker:run()CLOSE CLIENT==========");
+			// System.out.println("==========IOException in Worker:run()CLOSE CLIENT==========");
 			skt.service_error(new RMIException(e));
 		} 
 	}	
@@ -114,16 +114,14 @@ public class Worker<T> extends Thread {
 		Object val = null;
 		Class<?> objClass = localObj.getClass();
 		Method targetMethod = null;
-		for (Class<?> a : argsType) {
-			System.out.println(a);
-		}
+
 		try {
-			System.out.println("********" + methodName + " in " + objClass.getName() + "*****");
+			// System.out.println("********" + methodName + " in " + objClass.getName() + "*****");
 			targetMethod = objClass.getMethod(methodName, argsType);
 		} catch (NoSuchMethodException | SecurityException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-			System.out.println("==========Worker: Exp when runMethod1==========");
+			// System.out.println("==========Worker: Exp when runMethod1==========");
 			skt.service_error(new RMIException(e1));
 			return new RMIData(null, e1);
 		}
@@ -133,10 +131,10 @@ public class Worker<T> extends Thread {
 				return new RMIData(null, new RMIException("calling method not declared in the interface for which the skeleton was created"));
 			}
 			try {
-				System.out.println("==========Worker: class:" + localObj.getClass().getName());
-				System.out.println("==========Worker: class:" + itfName);
-				System.out.println("==========Worker: method: " + targetMethod.getName());
-				System.out.println("==========Worker: method: " + className);
+				// System.out.println("==========Worker: class:" + localObj.getClass().getName());
+				// System.out.println("==========Worker: class:" + itfName);
+				// System.out.println("==========Worker: method: " + targetMethod.getName());
+				// System.out.println("==========Worker: method: " + className);
 				targetMethod.setAccessible(true);
 				val = targetMethod.invoke(localObj, args);
 			} catch (InvocationTargetException e1) {
@@ -144,7 +142,7 @@ public class Worker<T> extends Thread {
 			} catch (IllegalAccessException | IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				System.out.println("==========Worker: Exp when runMethod2==========");
+				// System.out.println("==========Worker: Exp when runMethod2==========");
 				skt.service_error(new RMIException(e));
 				return new RMIData(null, new RMIException(e));
 			}

@@ -7,7 +7,7 @@ import rmi.Stub;
 
 public class Client {
 	public static void main(String[] args) {
-		System.out.println("==============Tests==============");
+		// System.out.println("==============Tests==============");
 		String IP = args[0];
 		int port = Integer.parseInt(args[1]);
 		IntPingPongServer server = Stub.create(IntPingPongServer.class,
@@ -23,7 +23,7 @@ public class Client {
 				}
 			}
 			catch (RMIException e) {
-				System.out.print("=================Client:Pinging server=======");
+				//System.out.print("=================Client:Pinging server=======");
 				e.printStackTrace();
 			}
 		}

@@ -1,10 +1,6 @@
 #!/bin/bash
 
 clear
-#####################################################################
-# Compile all *.java files:
-#####################################################################
-#find . -name "*.java" -print | xargs javac
 
 #####################################################################
 # Build images:
@@ -19,7 +15,7 @@ printf "Finish building images...\n\n"
 # Start running containers
 #####################################################################
 
-docker run -itd --name "test" rmi_img /bin/bash
+# docker run -itd --name "test" rmi_img /bin/bash
 
 docker run -itd --name "server" rmi_img java -cp . pingPong.server.Server 7000
 

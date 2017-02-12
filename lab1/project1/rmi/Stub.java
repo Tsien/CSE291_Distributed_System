@@ -74,7 +74,7 @@ public abstract class Stub
 			if (methodName.equals("equals") && len >= 1
 					&& method.getReturnType().getName().equals("boolean")
 					&& method.getParameterTypes()[0].getName().equals("java.lang.Object")) {
-				System.out.println("=====Stub: checking equals==========");
+				// System.out.println("=====Stub: checking equals==========");
 				if (args[0] == null) {
 					return false;
 				}
@@ -118,30 +118,30 @@ public abstract class Stub
 			RMIData response = null;
 			// TODO try/catch exceptions
 			try {
-				System.out.println("========IP:" + serverAddress.getAddress() + " , Port:" +
-									serverAddress.getPort() + " ========================");
+				// System.out.println("========IP:" + serverAddress.getAddress() + " , Port:" +
+				//					serverAddress.getPort() + " ========================");
 				client.connect(serverAddress);
 				oStream = new ObjectOutputStream(client.getOutputStream());
 				oStream.flush();			
 				iStream = new ObjectInputStream(client.getInputStream());
-				System.out.println("==============STUB: OPEN I_STREAM============");
+				// System.out.println("==============STUB: OPEN I_STREAM============");
 				request = new RMIData(myClass.getName(), method.getName(), args, method.getParameterTypes(), null, null);
 				oStream.writeObject(request);
 				response = (RMIData) iStream.readObject();
 				client.close();				
 			} catch (IOException e){
-				System.out.println("==============STUB: IO_EXCEPTION============");				
+				// System.out.println("==============STUB: IO_EXCEPTION============");				
 				//e.printStackTrace();
 				throw (Throwable) (new RMIException(e));
 			}
 						
-			System.out.println("==============STUB: CLIENT CLOSE============");
+			// System.out.println("==============STUB: CLIENT CLOSE============");
 			
 			if (response != null) {
 				Object res = response.getResult();
 				Exception e = response.getException();
-				System.out.println("Remote call result: " + res);
-				System.out.println("Remote call exception: " + e);
+				// System.out.println("Remote call result: " + res);
+				// System.out.println("Remote call exception: " + e);
 				if (e != null) {
 					throw e;
 				}
