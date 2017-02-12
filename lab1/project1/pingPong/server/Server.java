@@ -1,4 +1,4 @@
-package rmi.server;
+package pingPong.server;
 
 import java.net.*;
 import rmi.RMIException;
@@ -12,7 +12,6 @@ public class Server {
 
 		try{
 			skeleton.start();
-		
 		}catch(RMIException e){
 			System.out.println("Trying to start skeleton");
 			e.printStackTrace();

@@ -1,4 +1,4 @@
-package rmi.server;
+package pingPong.server;
 
 public class PingServerFactory{
 	public static PingPongServer makePingServer(){
