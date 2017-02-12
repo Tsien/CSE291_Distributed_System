@@ -7,11 +7,11 @@ import rmi.server.IntPingPongServer;
 
 public class Client {
 	public static void main(String[] args){
-
-		String address = args[0];
-		int port = Integer.parseInt(args[1]);
+		System.out.println("tests");
+//		String address = args[0];
+		int port = Integer.parseInt(args[0]);
 		IntPingPongServer server = Stub.create(IntPingPongServer.class,
-											   new InetSocketAddress(address, port));
+											   new InetSocketAddress(port));
 		int i;
 		int count = 0;
 		for(i=1;i<=4;i++){
