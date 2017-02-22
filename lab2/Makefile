@@ -12,9 +12,10 @@
 #   build tools.
 
 DFSPACKAGES = common rmi storage naming client apps
-JARFILE = dfs.jar
+JARFILE = dfs.jar 
 ARCHIVE = project2.zip
-JAVAFILES = */*.java */*/*.java
+JAVAFILES = */*.java */*/*.java 
+CLASSPATH = ./rmi/reference-rmi.jar
 
 # Javadoc-related variables.
 # - DOCDIR gives the relative path to the directory into which the documentation
@@ -51,7 +52,7 @@ jar : all-classes
 # Compile all Java files.
 .PHONY : all-classes
 all-classes :
-	javac $(JAVAFILES)
+	javac $(JAVAFILES) -cp $(CLASSPATH)
 
 # Run unit and conformance tests.
 .PHONY : test
