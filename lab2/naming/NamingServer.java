@@ -33,6 +33,15 @@ import storage.*;
  */
 public class NamingServer implements Service, Registration
 {
+	private HashSet<Storage> regTable;
+	private Skeleton<Service> serviceSklt;
+	private Skeleton<Registration> registSklt;
+	
+	/**
+	 * The root node of the filesystem directory tree
+	 */
+	private Node root;
+	
     /** Creates the naming server object.
 
         <p>
@@ -40,7 +49,7 @@ public class NamingServer implements Service, Registration
      */
     public NamingServer()
     {
-        throw new UnsupportedOperationException("not implemented");
+    	root = new Node(null, false, "");
     }
 
     /** Starts the naming server.
@@ -56,7 +65,12 @@ public class NamingServer implements Service, Registration
      */
     public synchronized void start() throws RMIException
     {
-        throw new UnsupportedOperationException("not implemented");
+    	InetSocketAddress service_address = new InetSocketAddress(NamingStubs.SERVICE_PORT);
+    	InetSocketAddress register_address = new InetSocketAddress(NamingStubs.REGISTRATION_PORT);
+    	serviceSklt = new Skeleton<Service>(Service.class, this, service_address);
+    	registSklt = new Skeleton<Registration>(Registration.class, this, register_address);
+    	serviceSklt.start();
+    	registSklt.start();
     }
 
     /** Stops the naming server.
@@ -70,7 +84,9 @@ public class NamingServer implements Service, Registration
      */
     public void stop()
     {
-        throw new UnsupportedOperationException("not implemented");
+    	serviceSklt.stop();
+    	registSklt.stop();
+        stopped(null);
     }
 
     /** Indicates that the server has completely shut down.
@@ -102,32 +118,97 @@ public class NamingServer implements Service, Registration
     @Override
     public boolean isDirectory(Path path) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+    	// TODO: The parent directory should be locked for shared access before this
+        // operation is performed.
+    	
+    	// assume path is an absolute path
+    	Node cur = root;
+    	for (String s : path) {
+    		Node next = cur.getChild(s);
+    		if (next == null) {
+    			throw new FileNotFoundException("Error: " + path + " cannot be found...");
+    		}
+    		cur = next;
+    	}
+        return cur.getIsFile();
     }
 
     @Override
     public String[] list(Path directory) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+    	// TODO: lock
+    	
+    	Node cur = root;
+    	for (String s : directory) {
+    		Node next = cur.getChild(s);
+    		if (next == null || next.getIsFile()) {
+    			throw new FileNotFoundException("Error: " + directory + " cannot be found...");
+    		}
+    		cur = next;
+    	}
+    	Node[] children = cur.getChildren();
+    	List<String> names = null;
+    	for (Node nd : children) {
+    		names.add(nd.getName());
+    	}
+    	String[] res = new String[names.size()];
+    	return names.toArray(res);
     }
 
     @Override
     public boolean createFile(Path file)
         throws RMIException, FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+    	if (regTable.isEmpty()) {
+    		throw new IllegalStateException("Error: no storage servers are connected to the naming server");
+    	}
+    	Path p = null;
+    	try {
+    		p = toAbsolute(file);
+    	}
+    	catch (FileNotFoundException e) {
+    		System.out.println(e);
+    	}
+        return addPath(p, true);
     }
 
     @Override
     public boolean createDirectory(Path directory) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+    	if (regTable.isEmpty()) {
+    		throw new IllegalStateException("Error: no storage servers are connected to the naming server");
+    	}
+    	Path p = null;
+    	try {
+    		p = toAbsolute(directory);
+    	}
+    	catch (FileNotFoundException e) {
+    		System.out.println(e);
+    	}
+        return addPath(p, false);    	
     }
 
     @Override
     public boolean delete(Path path) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+    	Path p = null;
+    	try {
+    		p = toAbsolute(path);
+    	}
+    	catch (FileNotFoundException e) {
+    		System.out.println(e);
+    		return false;
+    	}
+    	Node cur = root;
+    	for (String s : p) {
+    		Node next = cur.getChild(s);
+    		if (next == null) {
+    			throw new FileNotFoundException("Error: the path does not exist.");
+    		} 
+    		cur = next;
+    	}
+    	// TODO: delete
+        return true;
     }
 
     @Override
@@ -141,6 +222,56 @@ public class NamingServer implements Service, Registration
     public Path[] register(Storage client_stub, Command command_stub,
                            Path[] files)
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (client_stub == null || command_stub == null || files == null) {
+        	throw new NullPointerException("Error: NULL arguments.");
+        }
+        if (regTable.contains(client_stub)) {
+        	throw new IllegalStateException("Error: the storage server is already registered.");
+        }
+        
+        List<Path> dupFiles = new ArrayList<>();
+        
+        for (Path f : files) {
+        	if (!addPath(f, true)) {
+        		dupFiles.add(f);
+        	}
+        }
+        Path[] res = new Path[dupFiles.size()];
+        return dupFiles.toArray(res);
+    }
+    /**
+     * Add a new Path to the filesystem directory  tree
+     * @param p Path
+     * @return true if adding path successfully, false otherwise
+     */
+    private boolean addPath(Path p, boolean isFile) {
+    	boolean tag = false;
+    	Node cur = root;
+    	for (String s : p) {
+    		Node next = cur.getChild(s);
+    		if (next == null) {
+    			next = new Node(cur, false, s);
+    			cur.addChild(next);
+    			tag = true;
+    		} 
+    		cur = next;
+    	}
+    	if (tag) {
+    		cur.setIsFile(isFile);
+    	}
+    	return tag;
+    }
+    
+    /**
+     * Transform relative path to absolute path
+     * @param p
+     * @return path
+     */
+    public Path toAbsolute(Path p) throws FileNotFoundException {
+    	Path parent = p.parent();
+    	if (parent == null) {
+    		throw new FileNotFoundException("Error: the parent directory does not exist.");
+    	}
+    	return new Path();
     }
 }
