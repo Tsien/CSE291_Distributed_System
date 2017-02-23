@@ -11,11 +11,10 @@
 # - JAVAFILES is all of the Java files in the project, including test cases and
 #   build tools.
 
-DFSPACKAGES = common rmi storage naming client apps
-JARFILE = dfs.jar 
+DFSPACKAGES = common storage naming client apps
+JARFILE = dfs.jar
 ARCHIVE = project2.zip
-JAVAFILES = */*.java */*/*.java 
-CLASSPATH = ./rmi/reference-rmi.jar
+JAVAFILES = */*.java */*/*.java
 
 # Javadoc-related variables.
 # - DOCDIR gives the relative path to the directory into which the documentation
@@ -52,14 +51,14 @@ jar : all-classes
 # Compile all Java files.
 .PHONY : all-classes
 all-classes :
-	javac $(JAVAFILES) -cp $(CLASSPATH)
+	javac -cp reference-rmi.jar $(JAVAFILES)
 
 # Run unit and conformance tests.
 .PHONY : test
 test : all-classes
-	java -cp $(UNITCLASSPATH) unit.UnitTests
+	java -cp $(UNITCLASSPATH):reference-rmi.jar unit.UnitTests
 	@echo
-	java conformance.ConformanceTests
+	java -cp .$(CPSEPARATOR)reference-rmi.jar conformance.ConformanceTests
 
 # Delete all intermediate and final output and leave only the source.
 .PHONY : clean
