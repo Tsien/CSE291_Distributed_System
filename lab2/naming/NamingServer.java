@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 import rmi.*;
 import common.*;
@@ -134,12 +135,44 @@ public class NamingServer implements Service, Registration
     }
 
     // The following public methods are documented in Service.java.
+    /**
+		@param path The file or directory to be locked.
+        @param exclusive If <code>true</code>, the object is to be locked for
+                         exclusive access. Otherwise, it is to be locked for
+                         shared access.
+        @throws FileNotFoundException If the object specified by
+                                      <code>path</code> cannot be found.
+        @throws IllegalStateException If the object is a file, the file is
+                                      being locked for write access, and a stale
+                                      copy cannot be deleted from a storage
+                                      server for any reason, or if the naming
+                                      server has shut down and the lock attempt
+                                      has been interrupted.
+        @throws RMIException If the call cannot be completed due to a network
+                             error. This includes server shutdown while a client
+                             is waiting to obtain the lock.
+     */
     @Override
     public void lock(Path path, boolean exclusive) throws FileNotFoundException
     {
         throw new UnsupportedOperationException("not implemented");
     }
 
+    /** Unlocks a file or directory.
+
+    @param path The file or directory to be unlocked.
+    @param exclusive Must be <code>true</code> if the object was locked for
+                     exclusive access, and <code>false</code> if it was
+                     locked for shared access.
+    @throws IllegalArgumentException If the object specified by
+                                     <code>path</code> cannot be found. This
+                                     is a client programming error, as the
+                                     path must have previously been locked,
+                                     and cannot be removed while it is
+                                     locked.
+    @throws RMIException If the call cannot be completed due to a network
+                         error.
+    */
     @Override
     public void unlock(Path path, boolean exclusive)
     {
@@ -280,11 +313,13 @@ public class NamingServer implements Service, Registration
 			throw new FileNotFoundException("Error: the path does not exist.");	    		
     	}
     	// Delete file on the storage server
-    	StorageStubs stb = path2Storage.get(path).get(0);
+    	List<StorageStubs> stbs = path2Storage.get(path);
     	try {
-			if (!stb.getCMD_stub().delete(path)) {
-				return false;
-			}
+    		for (StorageStubs stb : stbs) {
+    			if (!stb.getCMD_stub().delete(path)) {
+    				return false;
+    			}    			
+    		}
 		} catch (RMIException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -315,7 +350,8 @@ public class NamingServer implements Service, Registration
     	if (!fileSystem.containsKey(file)) {
     		throw new FileNotFoundException("Error: the file does not exist.");
     	}
-        return path2Storage.get(file).get(0).getClient_stub();
+    	int idx = ThreadLocalRandom.current().nextInt(path2Storage.get(file).size());
+        return path2Storage.get(file).get(idx).getClient_stub();
     }
 
     // The method register is documented in Registration.java.
@@ -361,7 +397,9 @@ public class NamingServer implements Service, Registration
     		throw new FileNotFoundException("Error: the parent directory does not exist.");
     	}    		
     	// create file on storage server
-    	StorageStubs stb = path2Storage.get(p).get(0);
+    	// TODO: random pick server
+    	int idx = ThreadLocalRandom.current().nextInt(path2Storage.get(p).size());
+    	StorageStubs stb = path2Storage.get(p).get(idx);
     	if (!stb.getCMD_stub().create(file)) {
     		return false;
     	}
