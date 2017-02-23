@@ -21,6 +21,15 @@ import java.util.*;
  */
 public class Path implements Iterable<String>, Comparable<Path>, Serializable
 {
+	private static final long serialVersionUID = -2894863567529366096L;
+
+	public enum PathType{FILE, DIRECTORY};
+	
+	/**
+	 * The type of this path
+	 */
+	private PathType pathType;
+
     /** Creates a new path which represents the root directory. */
     public Path()
     {
@@ -220,4 +229,12 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     {
         throw new UnsupportedOperationException("not implemented");
     }
+
+	public PathType getPathType() {
+		return pathType;
+	}
+
+	public void setPathType(PathType pathType) {
+		this.pathType = pathType;
+	}
 }

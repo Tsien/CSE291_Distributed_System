@@ -3,6 +3,7 @@ package naming;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import rmi.*;
 import common.*;
@@ -33,14 +34,36 @@ import storage.*;
  */
 public class NamingServer implements Service, Registration
 {
-	private HashSet<Storage> regTable;
+	
+	/**
+	 * Service Skeleton for client
+	 */
 	private Skeleton<Service> serviceSklt;
+	
+	/**
+	 * Registration Skeleton for storage servers
+	 */
 	private Skeleton<Registration> registSklt;
 	
 	/**
+	 * Registration table to avoid duplication
+	 */
+	private HashSet<StorageStubs> regTable;
+
+	/**
+	 * The filesystem directory tree
+	 */
+	private Map<Path, List<Path>> fileSystem;
+
+	/**
+	 * A hashmap mapping from path to the storage servers 
+	 */
+	private Map<Path, List<StorageStubs>> path2Storage;
+
+	/**
 	 * The root node of the filesystem directory tree
 	 */
-	private Node root;
+	private Path root;
 	
     /** Creates the naming server object.
 
@@ -49,7 +72,15 @@ public class NamingServer implements Service, Registration
      */
     public NamingServer()
     {
-    	root = new Node(null, false, "");
+    	serviceSklt = null;
+    	registSklt = null;
+		regTable = new HashSet<StorageStubs>();
+    	fileSystem = new ConcurrentHashMap<Path, List<Path>>();
+    	path2Storage = new ConcurrentHashMap<Path, List<StorageStubs>>();
+    	root = new Path();
+    	
+    	fileSystem.put(root, new ArrayList<Path>());
+    	path2Storage.put(root, new ArrayList<StorageStubs>());
     }
 
     /** Starts the naming server.
@@ -115,6 +146,21 @@ public class NamingServer implements Service, Registration
         throw new UnsupportedOperationException("not implemented");
     }
 
+    /** Determines whether a path refers to a directory.
+
+    <p>
+    The parent directory should be locked for shared access before this
+    operation is performed. This is to prevent the object in question from
+    being deleted or re-created while this call is in progress.
+
+    @param path The object to be checked.
+    @return <code>true</code> if the object is a directory,
+            <code>false</code> if it is a file.
+    @throws FileNotFoundException If the object specified by
+                                  <code>path</code> cannot be found.
+    @throws RMIException If the call cannot be completed due to a network
+                         error.
+    */    
     @Override
     public boolean isDirectory(Path path) throws FileNotFoundException
     {
@@ -122,39 +168,55 @@ public class NamingServer implements Service, Registration
         // operation is performed.
     	
     	// assume path is an absolute path
-    	Node cur = root;
-    	for (String s : path) {
-    		Node next = cur.getChild(s);
-    		if (next == null) {
-    			throw new FileNotFoundException("Error: " + path + " cannot be found...");
-    		}
-    		cur = next;
-    	}
-        return cur.getIsFile();
+        return path.getPathType() == Path.PathType.DIRECTORY;
     }
 
+    /** Lists the contents of a directory.
+
+    <p>
+    The directory should be locked for shared access before this operation
+    is performed, because this operation reads the directory's child list.
+
+    @param directory The directory to be listed.
+    @return An array of the directory entries. The entries are not
+            guaranteed to be in any particular order.
+    @throws FileNotFoundException If the given path does not refer to a
+                                  directory.
+    @throws RMIException If the call cannot be completed due to a network
+                         error.
+    */
     @Override
     public String[] list(Path directory) throws FileNotFoundException
     {
     	// TODO: lock
-    	
-    	Node cur = root;
-    	for (String s : directory) {
-    		Node next = cur.getChild(s);
-    		if (next == null || next.getIsFile()) {
-    			throw new FileNotFoundException("Error: " + directory + " cannot be found...");
-    		}
-    		cur = next;
+    	List<Path> subDir = fileSystem.get(directory);
+    	if (subDir == null || directory.getPathType() == Path.PathType.FILE) {
+    		throw new FileNotFoundException("Error: the given path does not refer to a directory");
     	}
-    	Node[] children = cur.getChildren();
-    	List<String> names = null;
-    	for (Node nd : children) {
-    		names.add(nd.getName());
+    	String[] res = new String[subDir.size()];
+    	int i = 0;
+    	for (Path p : subDir) {
+    		res[i++] = p.last();
     	}
-    	String[] res = new String[names.size()];
-    	return names.toArray(res);
+    	return res;
     }
+    
+    /** Creates the given file, if it does not exist.
 
+    <p>
+    The parent directory should be locked for exclusive access before this
+    operation is performed.
+
+    @param file Path at which the file is to be created.
+    @return <code>true</code> if the file is created successfully,
+            <code>false</code> otherwise. The file is not created if a file
+            or directory with the given name already exists.
+    @throws FileNotFoundException If the parent directory does not exist.
+    @throws IllegalStateException If no storage servers are connected to the
+                                  naming server.
+    @throws RMIException If the call cannot be completed due to a network
+                         error.
+    */
     @Override
     public boolean createFile(Path file)
         throws RMIException, FileNotFoundException
@@ -162,59 +224,98 @@ public class NamingServer implements Service, Registration
     	if (regTable.isEmpty()) {
     		throw new IllegalStateException("Error: no storage servers are connected to the naming server");
     	}
-    	Path p = null;
-    	try {
-    		p = toAbsolute(file);
-    	}
-    	catch (FileNotFoundException e) {
-    		System.out.println(e);
-    	}
-        return addPath(p, true);
+        return addPath(file);
     }
 
+    /** Creates the given directory, if it does not exist.
+
+    <p>
+    The parent directory should be locked for exclusive access before this
+    operation is performed.
+
+    @param directory Path at which the directory is to be created.
+    @return <code>true</code> if the directory is created successfully,
+            <code>false</code> otherwise. The directory is not created if
+            a file or directory with the given name already exists.
+    @throws FileNotFoundException If the parent directory does not exist.
+    @throws RMIException If the call cannot be completed due to a network
+                         error.
+    */
     @Override
     public boolean createDirectory(Path directory) throws FileNotFoundException
     {
-    	if (regTable.isEmpty()) {
-    		throw new IllegalStateException("Error: no storage servers are connected to the naming server");
-    	}
-    	Path p = null;
+    	boolean res = false;
     	try {
-    		p = toAbsolute(directory);
-    	}
-    	catch (FileNotFoundException e) {
-    		System.out.println(e);
-    	}
-        return addPath(p, false);    	
+			res = addPath(directory);
+		} catch (RMIException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return res;
     }
 
+    /** Deletes a file or directory.
+
+    <p>
+    The parent directory should be locked for exclusive access before this
+    operation is performed.
+
+    @param path Path to the file or directory to be deleted.
+    @return <code>true</code> if the file or directory is deleted;
+            <code>false</code> otherwise. The root directory cannot be
+            deleted.
+    @throws FileNotFoundException If the object or parent directory does not
+                                  exist.
+    @throws RMIException If the call cannot be completed due to a network
+                         error.
+    */
     @Override
     public boolean delete(Path path) throws FileNotFoundException
     {
-    	Path p = null;
+    	if (path.isRoot()) {
+    		throw new FileNotFoundException("Error: the parent directory does not exist.");    		
+    	}    	
+    	Path p = path.parent();
+    	if (!fileSystem.containsKey(path) || !fileSystem.containsKey(p)) {
+			throw new FileNotFoundException("Error: the path does not exist.");	    		
+    	}
+    	// Delete file on the storage server
+    	StorageStubs stb = path2Storage.get(path).get(0);
     	try {
-    		p = toAbsolute(path);
-    	}
-    	catch (FileNotFoundException e) {
-    		System.out.println(e);
-    		return false;
-    	}
-    	Node cur = root;
-    	for (String s : p) {
-    		Node next = cur.getChild(s);
-    		if (next == null) {
-    			throw new FileNotFoundException("Error: the path does not exist.");
-    		} 
-    		cur = next;
-    	}
-    	// TODO: delete
+			if (!stb.getCMD_stub().delete(path)) {
+				return false;
+			}
+		} catch (RMIException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	fileSystem.get(p).remove(path);
+    	path2Storage.remove(path);
         return true;
     }
 
+    /** Returns a stub for the storage server hosting a file.
+
+    <p>
+    If the client intends to perform calls only to <code>read</code> or
+    <code>size</code> after obtaining the storage server stub, it should
+    lock the file for shared access before making this call. If it intends
+    to perform calls to <code>write</code>, it should lock the file for
+    exclusive access.
+
+    @param file Path to the file.
+    @return A stub for communicating with the storage server.
+    @throws FileNotFoundException If the file does not exist.
+    @throws RMIException If the call cannot be completed due to a network
+                         error.
+    */
     @Override
     public Storage getStorage(Path file) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+    	if (!fileSystem.containsKey(file)) {
+    		throw new FileNotFoundException("Error: the file does not exist.");
+    	}
+        return path2Storage.get(file).get(0).getClient_stub();
     }
 
     // The method register is documented in Registration.java.
@@ -232,9 +333,14 @@ public class NamingServer implements Service, Registration
         List<Path> dupFiles = new ArrayList<>();
         
         for (Path f : files) {
-        	if (!addPath(f, true)) {
-        		dupFiles.add(f);
-        	}
+        	try {
+				if (!addPath(f)) {
+					dupFiles.add(f);
+				}
+			} catch (FileNotFoundException | RMIException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
         Path[] res = new Path[dupFiles.size()];
         return dupFiles.toArray(res);
@@ -243,35 +349,25 @@ public class NamingServer implements Service, Registration
      * Add a new Path to the filesystem directory  tree
      * @param p Path
      * @return true if adding path successfully, false otherwise
+     * @throws FileNotFoundException 
+     * @throws RMIException 
      */
-    private boolean addPath(Path p, boolean isFile) {
-    	boolean tag = false;
-    	Node cur = root;
-    	for (String s : p) {
-    		Node next = cur.getChild(s);
-    		if (next == null) {
-    			next = new Node(cur, false, s);
-    			cur.addChild(next);
-    			tag = true;
-    		} 
-    		cur = next;
+    private boolean addPath(Path file) throws FileNotFoundException, RMIException {
+    	if (file.isRoot()) {
+    		throw new FileNotFoundException("Error: the parent directory does not exist.");    		
     	}
-    	if (tag) {
-    		cur.setIsFile(isFile);
-    	}
-    	return tag;
-    }
-    
-    /**
-     * Transform relative path to absolute path
-     * @param p
-     * @return path
-     */
-    public Path toAbsolute(Path p) throws FileNotFoundException {
-    	Path parent = p.parent();
-    	if (parent == null) {
+    	Path p = file.parent();
+    	if (p == null || !fileSystem.containsKey(p)) {
     		throw new FileNotFoundException("Error: the parent directory does not exist.");
+    	}    		
+    	// create file on storage server
+    	StorageStubs stb = path2Storage.get(p).get(0);
+    	if (!stb.getCMD_stub().create(file)) {
+    		return false;
     	}
-    	return new Path();
+    	// add path to the fileSystem directory tree
+    	fileSystem.get(p).add(file);
+    	path2Storage.put(file, new ArrayList<>(Arrays.asList(stb)));
+        return true;
     }
 }
