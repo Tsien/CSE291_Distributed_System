@@ -23,6 +23,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class Path implements Iterable<String>, Comparable<Path>, Serializable
 {
+	private static final long serialVersionUID = -2894863567529366096L;
+	
+	public enum PathType{FILE, DIRECTORY};		
+	
+	/**
+	 * The type of path
+	 */
+	private PathType pathType;
+	
 	CopyOnWriteArrayList<String> components;
     /** Creates a new path which represents the root directory. */
     public Path()
@@ -329,4 +338,12 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     	}
     	return pathStr;
     }
+
+	public PathType getPathType() {
+		return pathType;
+	}
+
+	public void setPathType(PathType pathType) {
+		this.pathType = pathType;
+	}
 }

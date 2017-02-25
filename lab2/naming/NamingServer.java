@@ -136,22 +136,22 @@ public class NamingServer implements Service, Registration
 
     // The following public methods are documented in Service.java.
     /**
-		@param path The file or directory to be locked.
-        @param exclusive If <code>true</code>, the object is to be locked for
-                         exclusive access. Otherwise, it is to be locked for
-                         shared access.
-        @throws FileNotFoundException If the object specified by
-                                      <code>path</code> cannot be found.
-        @throws IllegalStateException If the object is a file, the file is
-                                      being locked for write access, and a stale
-                                      copy cannot be deleted from a storage
-                                      server for any reason, or if the naming
-                                      server has shut down and the lock attempt
-                                      has been interrupted.
-        @throws RMIException If the call cannot be completed due to a network
-                             error. This includes server shutdown while a client
-                             is waiting to obtain the lock.
-     */
+	*	@param path The file or directory to be locked.
+    *    @param exclusive If <code>true</code>, the object is to be locked for
+    *                     exclusive access. Otherwise, it is to be locked for
+    *                     shared access.
+    *    @throws FileNotFoundException If the object specified by
+    *                                  <code>path</code> cannot be found.
+    *    @throws IllegalStateException If the object is a file, the file is
+    *                                  being locked for write access, and a stale
+    *                                  copy cannot be deleted from a storage
+    *                                  server for any reason, or if the naming
+    *                                  server has shut down and the lock attempt
+    *                                  has been interrupted.
+    *    @throws RMIException If the call cannot be completed due to a network
+    *                         error. This includes server shutdown while a client
+    *                         is waiting to obtain the lock.
+    */
     @Override
     public void lock(Path path, boolean exclusive) throws FileNotFoundException
     {
