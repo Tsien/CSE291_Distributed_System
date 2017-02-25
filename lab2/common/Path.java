@@ -51,10 +51,15 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     public Path(Path path, String component)
     {	
     	this(path.toString());
+//    	System.out.println(component);
+//    	System.out.println("Entering path constructor");
     	if(component.contains("/")||component.contains(":")||
-    			component.isEmpty()||component.equals("")){
-    		this.components.add(component);
+    			component.isEmpty()||component == null){
+    		throw new IllegalArgumentException();
     	}
+//    	System.out.println("before adding component");
+    	this.components.add(component);
+//    	System.out.println("after adding component");
     }
 
     /** Creates a new path from a path string.
@@ -71,6 +76,7 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
      */
     public Path(String path)
     {
+//    	System.out.println("Testing string:"+path);
     	if (!path.startsWith("/")||path.contains(":")){
     		throw new IllegalArgumentException();
     	}
@@ -334,7 +340,7 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     	}
     	String pathStr = new String();
     	for(String component: this.components){
-    		pathStr.concat("/"+component);
+    		pathStr = pathStr.concat("/"+component);
     	}
     	return pathStr;
     }
