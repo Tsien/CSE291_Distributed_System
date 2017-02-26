@@ -58,12 +58,12 @@ public class CreationTest extends NamingTest
     {
         testCreateDirectoryArguments();
         testCreateFileArguments();
-
+/*
         testDirectoryCreation(new Path("/directory/subdirectory"));
         testDirectoryCreation(new Path("/another_directory"));
 
         testFileCreation(new Path("/file"));
-        testFileCreation(new Path("/another_directory/file"));
+        testFileCreation(new Path("/another_directory/file"));*/
     }
 
     /** Tests that valid requests to create a file cause a file to be created on
