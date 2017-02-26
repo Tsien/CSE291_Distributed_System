@@ -271,8 +271,22 @@ public class NamingServer implements Service, Registration
     	if (regTable.isEmpty()) {
     		throw new IllegalStateException("Error: no storage servers are connected to the naming server");
     	}
+    	Path p = file.parent();
+    	if (p == null || !fileSystem.containsKey(p)) {
+    		throw new FileNotFoundException("Error: the parent directory does not exist.");
+    	}    		
     	file.setPathType(Path.PathType.FILE);
-        return addPath(file);
+    	// create file on storage server
+    	int idx = ThreadLocalRandom.current().nextInt(path2Storage.get(p).size());
+    	StorageStubs stb = path2Storage.get(p).get(idx);
+    	if (!stb.getCMD_stub().create(file)) {
+    		return false;
+    	}
+    	// add file path to the fileSystem directory tree
+    	fileSystem.get(p).add(file);
+    	path2Storage.put(file, new ArrayList<StorageStubs>(Arrays.asList(stb)));
+    	// TODO: add parent path to the fileSystem directory tree
+        return true;
     }
 
     /** Creates the given directory, if it does not exist.
@@ -292,15 +306,22 @@ public class NamingServer implements Service, Registration
     @Override
     public boolean createDirectory(Path directory) throws FileNotFoundException
     {
+    	Path p = directory.parent();
+    	if (p == null || !this.fileSystem.containsKey(p)) {
+    		throw new FileNotFoundException("Error: the parent directory does not exist.");
+    	}
     	directory.setPathType(Path.PathType.DIRECTORY);
-    	boolean res = false;
-    	try {
-			res = addPath(directory);
-		} catch (RMIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	return res;
+    	// create file on storage server
+    	int idx = ThreadLocalRandom.current().nextInt(path2Storage.get(p).size());
+    	StorageStubs stb = path2Storage.get(p).get(idx);
+    	if (!stb.getCMD_stub().create(directory)) {
+    		return false;
+    	}
+    	// add file path to the fileSystem directory tree
+    	fileSystem.get(p).add(file);
+    	path2Storage.put(file, new ArrayList<StorageStubs>(Arrays.asList(stb)));
+    	// TODO: add parent path to the fileSystem directory tree
+    	return true;
     }
 
     /** Deletes a file or directory.
@@ -415,7 +436,6 @@ public class NamingServer implements Service, Registration
     		throw new FileNotFoundException("Error: the parent directory does not exist.");
     	}    		
     	// create file on storage server
-    	// TODO: random pick server
     	int idx = ThreadLocalRandom.current().nextInt(path2Storage.get(p).size());
     	StorageStubs stb = path2Storage.get(p).get(idx);
     	if (!stb.getCMD_stub().create(file)) {

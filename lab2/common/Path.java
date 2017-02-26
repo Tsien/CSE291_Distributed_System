@@ -30,7 +30,7 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
 	/**
 	 * The type of path
 	 */
-	private PathType pathType = Path.PathType.FILE;
+	private PathType pathType;
 	
 	CopyOnWriteArrayList<String> components;
     /** Creates a new path which represents the root directory. */
