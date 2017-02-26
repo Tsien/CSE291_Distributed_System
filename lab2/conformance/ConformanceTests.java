@@ -33,7 +33,7 @@ public class ConformanceTests
         // Create the test list, the series object, and run the test series.
         @SuppressWarnings("unchecked")
         Class<? extends Test>[]     tests =
-            new Class[] {/*conformance.common.PathTest.class,*/
+            new Class[] {conformance.common.PathTest.class,
                          conformance.rmi.SkeletonTest.class,
                          conformance.rmi.StubTest.class,
                          conformance.rmi.ConnectionTest.class,

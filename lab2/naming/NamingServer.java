@@ -49,7 +49,7 @@ public class NamingServer implements Service, Registration
 	/**
 	 * Registration table to avoid duplication
 	 */
-	private HashSet<StorageStubs> regTable;
+	private Map<Storage, Command> regTable;
 
 	/**
 	 * The filesystem directory tree
@@ -75,7 +75,7 @@ public class NamingServer implements Service, Registration
     {
     	serviceSklt = null;
     	registSklt = null;
-		regTable = new HashSet<StorageStubs>();
+		regTable = new ConcurrentHashMap<Storage, Command>();
     	fileSystem = new ConcurrentHashMap<Path, List<Path>>();
     	path2Storage = new ConcurrentHashMap<Path, List<StorageStubs>>();
     	root = new Path();
@@ -155,7 +155,17 @@ public class NamingServer implements Service, Registration
     @Override
     public void lock(Path path, boolean exclusive) throws FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+    	if (!fileSystem.containsKey(path)) {
+    		throw new FileNotFoundException("Error: the object specified by " +
+    										path + " cannot be found.");
+    	}
+    	if (exclusive) {
+    		// for exlcusive access:
+    		// 
+    	}
+    	else {
+    		
+    	}
     }
 
     /** Unlocks a file or directory.
@@ -201,6 +211,10 @@ public class NamingServer implements Service, Registration
         // operation is performed.
     	
     	// assume path is an absolute path
+    	if (!this.fileSystem.containsKey(path)) {
+    		throw new FileNotFoundException("Error: the path <" + path 
+    				+ "> cannot be found.");
+    	}
         return path.getPathType() == Path.PathType.DIRECTORY;
     }
 
@@ -257,6 +271,7 @@ public class NamingServer implements Service, Registration
     	if (regTable.isEmpty()) {
     		throw new IllegalStateException("Error: no storage servers are connected to the naming server");
     	}
+    	file.setPathType(Path.PathType.FILE);
         return addPath(file);
     }
 
@@ -277,6 +292,7 @@ public class NamingServer implements Service, Registration
     @Override
     public boolean createDirectory(Path directory) throws FileNotFoundException
     {
+    	directory.setPathType(Path.PathType.DIRECTORY);
     	boolean res = false;
     	try {
 			res = addPath(directory);
@@ -347,7 +363,7 @@ public class NamingServer implements Service, Registration
     @Override
     public Storage getStorage(Path file) throws FileNotFoundException
     {
-    	if (!fileSystem.containsKey(file)) {
+    	if (file.getPathType() == Path.PathType.DIRECTORY || !fileSystem.containsKey(file)) {
     		throw new FileNotFoundException("Error: the file does not exist.");
     	}
     	int idx = ThreadLocalRandom.current().nextInt(path2Storage.get(file).size());
@@ -362,27 +378,28 @@ public class NamingServer implements Service, Registration
         if (client_stub == null || command_stub == null || files == null) {
         	throw new NullPointerException("Error: NULL arguments.");
         }
-        if (regTable.contains(client_stub)) {
+        if (regTable.containsKey(client_stub)) {
         	throw new IllegalStateException("Error: the storage server is already registered.");
         }
-        
+        regTable.put(client_stub, command_stub);
         List<Path> dupFiles = new ArrayList<>();
-        
         for (Path f : files) {
-        	try {
-				if (!addPath(f)) {
-					dupFiles.add(f);
-				}
-			} catch (FileNotFoundException | RMIException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        	f.setPathType(Path.PathType.FILE);
+        	if (this.fileSystem.containsKey(f) && !f.isRoot()) {
+        		dupFiles.add(f);
+        	}
+        	else {
+        		StorageStubs stb = new StorageStubs(client_stub, command_stub);
+                this.path2Storage.put(f, new ArrayList<StorageStubs>(Arrays.asList(stb)));        		
+                this.fileSystem.put(f, new ArrayList<Path>());
+                this.registerPath(f, stb);
+        	}
         }
         Path[] res = new Path[dupFiles.size()];
         return dupFiles.toArray(res);
     }
     /**
-     * Add a new Path to the filesystem directory  tree
+     * Add a new Path to the filesystem directory tree
      * @param p Path
      * @return true if adding path successfully, false otherwise
      * @throws FileNotFoundException 
@@ -392,6 +409,7 @@ public class NamingServer implements Service, Registration
     	if (file.isRoot()) {
     		throw new FileNotFoundException("Error: the parent directory does not exist.");    		
     	}
+    	System.out.println("=====In addPath: " + file.toString() + "=====");
     	Path p = file.parent();
     	if (p == null || !fileSystem.containsKey(p)) {
     		throw new FileNotFoundException("Error: the parent directory does not exist.");
@@ -405,7 +423,42 @@ public class NamingServer implements Service, Registration
     	}
     	// add path to the fileSystem directory tree
     	fileSystem.get(p).add(file);
-    	path2Storage.put(file, new ArrayList<>(Arrays.asList(stb)));
+    	path2Storage.put(file, new ArrayList<StorageStubs>(Arrays.asList(stb)));
         return true;
+    }
+    
+    /**
+     * Register an existing path(excluding the last component) to the filesystem directory tree
+     */
+    private void registerPath(Path file, StorageStubs stb) {
+    	if (file.isRoot()) {
+    		file.setPathType(Path.PathType.DIRECTORY);
+    		if (path2Storage.containsKey(file)) {
+    			this.path2Storage.get(file).add(stb);
+    		}
+    		else {
+                this.path2Storage.put(file, new ArrayList<StorageStubs>(Arrays.asList(stb)));        		    			
+    		}
+    		if (!this.fileSystem.containsKey(file)) {
+                this.fileSystem.put(file, new ArrayList<Path>());    		
+    		}
+    	}
+    	else {
+    		Path pt = file.parent();
+    		pt.setPathType(Path.PathType.DIRECTORY);
+    		if (path2Storage.containsKey(pt)) {
+    			this.path2Storage.get(pt).add(stb);
+    		}
+    		else {
+    			this.path2Storage.put(pt, new ArrayList<StorageStubs>(Arrays.asList(stb)));
+    		}
+    		if (this.fileSystem.containsKey(pt)) {
+    			this.fileSystem.get(pt).add(file);
+    		}
+    		else {
+    			this.fileSystem.put(pt, new ArrayList<Path>(Arrays.asList(file)));
+    		}
+    		this.registerPath(pt, stb);
+    	}
     }
 }
