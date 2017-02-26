@@ -31,9 +31,20 @@ public class StorageServer implements Storage, Command
                             the system should decide the port.
         @throws NullPointerException If <code>root</code> is <code>null</code>.
     */
+
+    Skeleton<Storage> StorageSkt;
+    Skeleton<Command> CommandSkt;
+    InetSocketAddress clientAddr, cmdAddr;
+    File rootdir;
+
+    //Registartion register;
     public StorageServer(File root, int client_port, int command_port)
-    {
-        throw new UnsupportedOperationException("not implemented");
+    { 
+        clientAddr = new InetSocketAddress(client_port);
+        cmdAddr    = new InetSocketAddress(command_port);
+        StorageSkt = new Skeleton<Storage>(Storage.class, new StorageServerImplementation(), clientAddr);
+        CommandSkt = new Skeleton<Command>(Command.class, new CommandServerImplementation(), cmdAddr);
+        rootdir = root;
     }
 
     /** Creats a storage server, given a directory on the local filesystem.
@@ -49,7 +60,7 @@ public class StorageServer implements Storage, Command
      */
     public StorageServer(File root)
     {
-        throw new UnsupportedOperationException("not implemented");
+        this(root, 0, 0);
     }
 
     /** Starts the storage server and registers it with the given naming
@@ -75,7 +86,19 @@ public class StorageServer implements Storage, Command
     public synchronized void start(String hostname, Registration naming_server)
         throws RMIException, UnknownHostException, FileNotFoundException
     {
-        throw new UnsupportedOperationException("not implemented");
+        Storage hStorage;
+        Command hCommand;
+        //throw new UnsupportedOperationException("not implemented");
+        hStorage = Stub.create(Storage.class, clientAddr);
+        hCommand = Stub.create(Command.class, cmdAddr);
+        try
+        {
+            naming_server.register(hStorage, hCommand, Path.list(rootdir));
+        }
+        catch(RMIException ex)
+        {
+            System.out.println("storage Registration failed!!!");
+        }
     }
 
     /** Stops the storage server.
@@ -85,7 +108,7 @@ public class StorageServer implements Storage, Command
      */
     public void stop()
     {
-        throw new UnsupportedOperationException("not implemented");
+        //throw new UnsupportedOperationException("not implemented");
     }
 
     /** Called when the storage server has shut down.
