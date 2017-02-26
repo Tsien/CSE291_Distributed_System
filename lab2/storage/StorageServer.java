@@ -93,7 +93,28 @@ public class StorageServer implements Storage, Command
         hCommand = Stub.create(Command.class, cmdAddr);
         try
         {
-            naming_server.register(hStorage, hCommand, Path.list(rootdir));
+            Path dupFilesLists[];
+            dupFilesLists = naming_server.register(hStorage, hCommand, Path.list(rootdir));
+            System.out.println("\nregistration started...");
+
+            for(Path path: dupFilesLists)
+            {
+                try
+                { 
+                    System.out.print("root dir:");
+                    System.out.println(rootdir);
+                    System.out.print("atempt to delete ");
+                    System.out.println(rootdir + path.toString());
+                    if(false == (new File(rootdir + path.toString())).delete())
+                    {
+                        System.out.println("filed not deleted");
+                    }
+                }
+                catch(Exception e)
+                {
+                    System.out.println("could't delete files");
+                }
+            }
         }
         catch(RMIException ex)
         {
@@ -150,8 +171,9 @@ public class StorageServer implements Storage, Command
 
     @Override
     public synchronized boolean delete(Path path)
-    {
-        throw new UnsupportedOperationException("not implemented");
+    {    
+        System.out.println("deleting files");
+        return false;
     }
 
     @Override
