@@ -73,8 +73,7 @@ public class NamingServer implements Service, Registration
     	this.regTable = new ConcurrentHashMap<Storage, Command>();
     	this.storages = new ArrayList<Storage>();
     	this.fileSystem = new ConcurrentHashMap<Path, PathInfo>();
-    	Path root = new Path();
-    	this.fileSystem.put(root, new PathInfo(false));
+    	this.fileSystem.put(new Path(), new PathInfo(false));
     }
 
     /** Starts the naming server.
