@@ -30,7 +30,7 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
 	/**
 	 * The type of path
 	 */
-	private PathType pathType;
+	private PathType pathType = Path.PathType.FILE;
 	
 	CopyOnWriteArrayList<String> components;
     /** Creates a new path which represents the root directory. */
@@ -78,7 +78,8 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     {
 //    	System.out.println("Testing string:"+path);
     	if (!path.startsWith("/")||path.contains(":")){
-    		throw new IllegalArgumentException();
+    		throw new IllegalArgumentException("Error: The path <" + path
+    				+ "> does not begin with a forward slash or contains a colon character");
     	}
     	String[] components = path.split("/");
     	this.components = new CopyOnWriteArrayList<String>();
@@ -187,7 +188,7 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     	if(this.isRoot())
             throw new IllegalArgumentException("root has no parent");
     	String parent = new String();
-    	if(this.components.size()==0){
+    	if(this.components.size()==1){
     		return new Path("/");
     	}
     	
@@ -195,7 +196,6 @@ public class Path implements Iterable<String>, Comparable<Path>, Serializable
     	for(i=0;i<this.components.size()-1;i++){
     		parent = parent.concat("/"+components.get(i));
     	}
-    	
     	return new Path(parent);
     }
 
