@@ -3,6 +3,7 @@ package storage;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+//import java.lang.IndexOutofBoundsException;
 
 import common.*;
 import rmi.*;
@@ -36,15 +37,14 @@ public class StorageServer implements Storage, Command
     Skeleton<Storage> StorageSkt;
     Skeleton<Command> CommandSkt;
     InetSocketAddress clientAddr, cmdAddr;
+    int client_port, command_port;
     File rootdir;
 
     //Registartion register;
     public StorageServer(File root, int client_port, int command_port)
     { 
-        clientAddr = new InetSocketAddress(client_port);
-        cmdAddr    = new InetSocketAddress(command_port);
-        StorageSkt = new Skeleton<Storage>(Storage.class, new StorageServerImplementation(), clientAddr);
-        CommandSkt = new Skeleton<Command>(Command.class, new CommandServerImplementation(), cmdAddr);
+        client_port  = client_port; 
+        command_port = command_port;
         rootdir = root;
     }
 
@@ -117,9 +117,16 @@ public class StorageServer implements Storage, Command
     {
         Storage hStorage;
         Command hCommand;
-        //throw new UnsupportedOperationException("not implemented");
-        hStorage = Stub.create(Storage.class, clientAddr);
-        hCommand = Stub.create(Command.class, cmdAddr);
+
+        clientAddr = new InetSocketAddress(hostname, client_port);
+        cmdAddr    = new InetSocketAddress(hostname, command_port);
+        StorageSkt = new Skeleton<Storage>(Storage.class, this, clientAddr);
+        CommandSkt = new Skeleton<Command>(Command.class, this, cmdAddr);
+
+        StorageSkt.start();
+        CommandSkt.start();
+        hStorage = Stub.create(Storage.class, StorageSkt);
+        hCommand = Stub.create(Command.class, CommandSkt);
 
         try
         {
@@ -152,25 +159,107 @@ public class StorageServer implements Storage, Command
     {
     }
 
+    protected boolean checkIfFileExists(File file) 
+    {
+        if(file.exists() && !file.isDirectory())
+        {
+            return true;
+        }
+        return false;
+    }
     // The following methods are documented in Storage.java.
     @Override
-    public synchronized long size(Path file) throws FileNotFoundException
-    {
-        throw new UnsupportedOperationException("not implemented");
+    public synchronized long size(Path path) throws FileNotFoundException
+    { 
+        File file = new File(rootdir + path.toString()); 
+        if(!checkIfFileExists(file))
+            throw new FileNotFoundException(path.toString());
+        FileInputStream fstream = new FileInputStream(file);
+        try
+        { 
+            return fstream.available();
+        }
+        catch(IOException ioEx)
+        {
+            throw new FileNotFoundException();
+        }
     }
 
     @Override
-    public synchronized byte[] read(Path file, long offset, int length)
+    public synchronized byte[] read(Path path, long offset, int length)
         throws FileNotFoundException, IOException
     {
-        throw new UnsupportedOperationException("not implemented");
+        File file = new File(rootdir + path.toString());
+        if(offset < 0 || length < 0)
+        {
+            throw new IndexOutOfBoundsException();
+        }
+        if(!checkIfFileExists(file))
+            throw new FileNotFoundException(path.toString()); 
+        FileInputStream fstream = new FileInputStream(file);
+        if(fstream.available() >= offset + length)
+        {
+            byte[] readBuff = new byte[length];
+            try
+            { 
+                fstream.read(readBuff, (int) offset, length);
+            }
+            catch (IOException ioEx)
+            {
+                throw ioEx;
+            }
+            return readBuff;
+        }
+        else
+        {
+            throw new IndexOutOfBoundsException();
+        }
     }
 
     @Override
-    public synchronized void write(Path file, long offset, byte[] data)
+    public synchronized void write(Path path, long offset, byte[] data)
         throws FileNotFoundException, IOException
     {
-        throw new UnsupportedOperationException("not implemented");
+        File file = new File(rootdir + path.toString());
+        if(offset < 0)
+        {
+            throw new IndexOutOfBoundsException();
+        }
+        if(!checkIfFileExists(file))
+            throw new FileNotFoundException(path.toString()); 
+        if(null == data)
+        {
+            throw new NullPointerException();
+        }
+
+        FileOutputStream fstream;
+        try
+        {
+            long sz = size(path);
+            if(sz < offset)
+            { 
+                System.out.println("appending");
+                System.out.print("data.length: ");
+                System.out.println(data.length);
+                fstream = new FileOutputStream(file, true);
+                while(sz++ < offset)
+                { 
+                    fstream.write(0);
+                }
+                fstream.write(data);
+            }
+            else
+            {
+                fstream = new FileOutputStream(file);
+                fstream.write(data, (int) offset, data.length);
+            }
+        }
+        catch(IOException ioEx)
+        {
+            System.out.println("IoException");
+            throw ioEx;
+        }
+        fstream.close();
     }
 
     // The following methods are documented in Command.java.
