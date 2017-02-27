@@ -2,6 +2,7 @@ package storage;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 import common.*;
 import rmi.*;
@@ -95,19 +96,27 @@ public class StorageServer implements Storage, Command
         {
             Path dupFilesLists[];
             dupFilesLists = naming_server.register(hStorage, hCommand, Path.list(rootdir));
-            System.out.println("\nregistration started...");
 
             for(Path path: dupFilesLists)
             {
                 try
                 { 
-                    System.out.print("root dir:");
                     System.out.println(rootdir);
-                    System.out.print("atempt to delete ");
                     System.out.println(rootdir + path.toString());
-                    if(false == (new File(rootdir + path.toString())).delete())
+                    if(true == (new File(rootdir + path.toString())).delete())
                     {
-                        System.out.println("filed not deleted");
+                        Path parentDir = path.parent();
+                        while(!parentDir.isRoot())
+                        {
+                            File file = new File(rootdir + parentDir.toString());
+                            if(file.list().length == 0)
+                                file.delete();
+                            else
+                            {
+                                break;
+                            }
+                            parentDir = parentDir.parent();
+                        }
                     }
                 }
                 catch(Exception e)
