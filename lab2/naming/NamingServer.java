@@ -158,7 +158,7 @@ public class NamingServer implements Service, Registration
         // the path up to, but not including, the object itself, are locked for
         // shared access to prevent their modification or deletion by other users.
     	try {
-			this.lockParent(path, false);
+			this.lockParent(path, true);
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
@@ -206,7 +206,7 @@ public class NamingServer implements Service, Registration
     		if (pf.getReadAccess() >= 20) {
     			pf.clearReadAccess();
     			// make a copy
-    			new Replicator(pf, path, this.storages).run();
+    			new Thread(new Replicator(pf, path, this.storages)).start();
     		}
     	}    	
     }
@@ -233,7 +233,7 @@ public class NamingServer implements Service, Registration
         	throw new IllegalArgumentException();
         }
         try {
-			this.lockParent(path, true);
+			this.lockParent(path, false);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -521,19 +521,19 @@ public class NamingServer implements Service, Registration
      * the path up to, but not including, the object itself, are locked for
      * shared access to prevent their modification or deletion by other users.
      * @param file
-     * @param unlock indicate whether it's requesting lock or unlock
+     * @param dolock indicate whether it's requesting lock or unlock
      * @throws InterruptedException 
      */
-    private void lockParent(Path file, boolean unlock) throws InterruptedException {
+    private void lockParent(Path file, boolean dolock) throws InterruptedException {
     	if (!file.isRoot()) {
     		Path p = file.parent();
-    		if (unlock) {
-    			this.fileSystem.get(p).getpLock().unlockRead();
+    		if (dolock) {
+    			this.fileSystem.get(p).getpLock().lockRead();
     		}
     		else {
-        		this.fileSystem.get(p).getpLock().lockRead();    			
+        		this.fileSystem.get(p).getpLock().unlockRead();    			
     		}
-    		this.lockParent(p, unlock);
+    		this.lockParent(p, dolock);
     	}
     }    
 }

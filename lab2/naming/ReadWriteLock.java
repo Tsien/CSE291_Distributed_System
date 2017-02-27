@@ -1,7 +1,7 @@
 package naming;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>
@@ -33,7 +33,7 @@ public class ReadWriteLock {
 	/**
 	 * Record readers for reentrance
 	 */
-	private Map<Thread, Integer> readingThreads = new HashMap<Thread, Integer>();
+	private Map<Thread, Integer> readingThreads = new ConcurrentHashMap<Thread, Integer>();
 	
 	/**
 	 * Request for shared access
@@ -53,7 +53,7 @@ public class ReadWriteLock {
 	 */
 	public synchronized void unlockRead() {
 		Thread cur = Thread.currentThread();
-		int val = readingThreads.get(cur);
+		int val = this.readingThreads.get(cur);
 		if (1 == val) {
 			readingThreads.remove(cur);
 		}
