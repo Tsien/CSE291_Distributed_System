@@ -75,7 +75,7 @@ public class ReadWriteLock {
 	public synchronized void lockWrite() throws InterruptedException {
 		++writeRequests;
 		Thread cur = Thread.currentThread();
-		while (!isOnlyReader(cur) || writer != cur || !readingThreads.isEmpty()) {
+		while (this.canGrantWrite(cur)) {
 			wait();
 		}
 		--writeRequests;
@@ -94,7 +94,7 @@ public class ReadWriteLock {
 		notifyAll();
 	}
 	
-	public boolean isOnlyReader(Thread cur) {
+	private boolean isOnlyReader(Thread cur) {
 		return readingThreads.size() == 1 && readingThreads.get(cur) != null;
 	}
 
@@ -103,7 +103,7 @@ public class ReadWriteLock {
 	 * @param cur The current thread
 	 * @return
 	 */
-	public boolean canGrantRead(Thread cur) {
+	private boolean canGrantRead(Thread cur) {
 		// Reader reentrance
 		if (readingThreads.containsKey(cur)) return true;
 		// Write-to-read reentrance
@@ -120,7 +120,7 @@ public class ReadWriteLock {
 	 * @param cur The current thread
 	 * @return
 	 */
-	public boolean canGrantWrite(Thread cur) {
+	private boolean canGrantWrite(Thread cur) {
 		// Writer reentrance
 		if (writer == cur) return true;
 		// Read-to-write reentrance

@@ -12,6 +12,11 @@ import common.Path;
  */
 public class PathInfo {
 	/**
+	 * A counter counting the number of shared access
+	 */
+	private int readAccess;
+	
+	/**
 	 * A path's Children
 	 */
 	private HashSet<Path> children;
@@ -32,6 +37,7 @@ public class PathInfo {
 	private boolean isFile;
 	
 	public PathInfo(boolean tag) {
+		this.clearReadAccess();
 		this.children = new HashSet<Path>();
 		this.stbs = new ArrayList<StorageStubs>();
 		this.setpLock(new ReadWriteLock());
@@ -73,6 +79,13 @@ public class PathInfo {
 	}
 
 	/**
+	 * @param stb the stb to add
+	 */
+	public void setStbs(List<StorageStubs> stb) {
+		this.stbs = stb;
+	}
+	
+	/**
 	 * @return the pLock
 	 */
 	public ReadWriteLock getpLock() {
@@ -98,5 +111,26 @@ public class PathInfo {
 	 */
 	public void setFile(boolean isFile) {
 		this.isFile = isFile;
+	}
+
+	/**
+	 * @return the readAccess
+	 */
+	public int getReadAccess() {
+		return readAccess;
+	}
+
+	/**
+	 * set the number of shared access to 0
+	 */
+	public void clearReadAccess() {
+		this.readAccess = 0;
+	}
+	
+	/**
+	 * Increase the number of shared access by 1
+	 */
+	public void incReadAccess() {
+		this.readAccess++;
 	}
 }

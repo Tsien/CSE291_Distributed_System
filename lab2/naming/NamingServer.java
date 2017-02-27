@@ -54,7 +54,7 @@ public class NamingServer implements Service, Registration
 	/**
 	 * A list of registered storages
 	 */
-	private List<Storage> storages;
+	private List<StorageStubs> storages;
 	
 	/**
 	 * The filesystem directory tree.
@@ -71,7 +71,7 @@ public class NamingServer implements Service, Registration
     	this.serviceSklt = null;
     	this.registSklt = null;
     	this.regTable = new ConcurrentHashMap<Storage, Command>();
-    	this.storages = new ArrayList<Storage>();
+    	this.storages = new ArrayList<StorageStubs>();
     	this.fileSystem = new ConcurrentHashMap<Path, PathInfo>();
     	this.fileSystem.put(new Path(), new PathInfo(false));
     }
@@ -147,17 +147,68 @@ public class NamingServer implements Service, Registration
     @Override
     public void lock(Path path, boolean exclusive) throws FileNotFoundException
     {
-    	if (!fileSystem.containsKey(path)) {
+    	// sanity check
+    	if (!this.fileSystem.containsKey(path)) {
     		throw new FileNotFoundException("Error: the object specified by " +
     										path + " cannot be found.");
     	}
+    	
+    	// Request lock
+    	// When any object is locked for either kind of access, all objects along
+        // the path up to, but not including, the object itself, are locked for
+        // shared access to prevent their modification or deletion by other users.
+    	try {
+			this.lockParent(path);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			// e1.printStackTrace();
+			throw new IllegalStateException();
+		}
+    	
+    	ReadWriteLock pLock = this.fileSystem.get(path).getpLock();
     	if (exclusive) {
-    		// for exlcusive access:
-    		// 
+    		try {
+				pLock.lockWrite();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				// e.printStackTrace();
+				throw new IllegalStateException();
+			}
+        	// invalidation
+    		// exclusive access = write request -> causes all copies of the file 
+    		// but one to be deleted
+    		List<StorageStubs> stbs = this.fileSystem.get(path).getStbs();
+    		while (stbs.size() > 1) {
+    			// deleted stale copies
+    			StorageStubs stb = stbs.get(0);
+    			stbs.remove(0);
+    			try {
+					stb.getCMD_stub().delete(path);
+				} catch (RMIException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    		}
+    		this.fileSystem.get(path).setStbs(stbs);
     	}
     	else {
-    		
-    	}
+    		try {
+				pLock.lockRead();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				// e.printStackTrace();
+				throw new IllegalStateException();
+			}
+    		PathInfo pf = this.fileSystem.get(path);
+    		pf.incReadAccess();
+        	// duplication
+    		// the file is replicated once for every 20 read requests
+    		if (pf.getReadAccess() >= 20) {
+    			pf.clearReadAccess();
+    			// make a copy
+    			new Replicator(pf, path, this.storages).run();
+    		}
+    	}    	
     }
 
     /** Unlocks a file or directory.
@@ -276,7 +327,7 @@ public class NamingServer implements Service, Registration
 
     	// create file on storage server
     	int idx = ThreadLocalRandom.current().nextInt(this.storages.size());
-    	Storage client = this.storages.get(idx);
+    	Storage client = this.storages.get(idx).getClient_stub();
     	Command cmd = this.regTable.get(client);
     	if (!cmd.create(file)) {
     		return false;
@@ -408,7 +459,7 @@ public class NamingServer implements Service, Registration
         
         // Add storage server to the register table
         this.regTable.put(client_stub, command_stub);
-        this.storages.add(client_stub);
+        this.storages.add(new StorageStubs(client_stub, command_stub));
         
         // Register new files 
         List<Path> dupFiles = new ArrayList<>();
@@ -450,4 +501,19 @@ public class NamingServer implements Service, Registration
 			this.fileSystem.get(p).addChild(file);
     	}
     }
+
+    /**
+     * When any object is locked for either kind of access, all objects along
+     * the path up to, but not including, the object itself, are locked for
+     * shared access to prevent their modification or deletion by other users.
+     * @param file
+     * @throws InterruptedException 
+     */
+    private void lockParent(Path file) throws InterruptedException {
+    	if (!file.isRoot()) {
+    		Path p = file.parent();
+    		this.fileSystem.get(p).getpLock().lockRead();
+    		this.lockParent(p);
+    	}
+    }    
 }
