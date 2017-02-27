@@ -158,7 +158,7 @@ public class NamingServer implements Service, Registration
         // the path up to, but not including, the object itself, are locked for
         // shared access to prevent their modification or deletion by other users.
     	try {
-			this.lockParent(path);
+			this.lockParent(path, false);
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
@@ -229,7 +229,21 @@ public class NamingServer implements Service, Registration
     @Override
     public void unlock(Path path, boolean exclusive)
     {
-        throw new UnsupportedOperationException("not implemented");
+        if (!this.fileSystem.containsKey(path)) {
+        	throw new IllegalArgumentException();
+        }
+        try {
+			this.lockParent(path, true);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        if (exclusive) {
+        	this.fileSystem.get(path).getpLock().unlockWrite();
+        }
+        else {
+        	this.fileSystem.get(path).getpLock().unlockRead();
+        }
     }
 
     /** Determines whether a path refers to a directory.
@@ -507,13 +521,19 @@ public class NamingServer implements Service, Registration
      * the path up to, but not including, the object itself, are locked for
      * shared access to prevent their modification or deletion by other users.
      * @param file
+     * @param unlock indicate whether it's requesting lock or unlock
      * @throws InterruptedException 
      */
-    private void lockParent(Path file) throws InterruptedException {
+    private void lockParent(Path file, boolean unlock) throws InterruptedException {
     	if (!file.isRoot()) {
     		Path p = file.parent();
-    		this.fileSystem.get(p).getpLock().lockRead();
-    		this.lockParent(p);
+    		if (unlock) {
+    			this.fileSystem.get(p).getpLock().unlockRead();
+    		}
+    		else {
+        		this.fileSystem.get(p).getpLock().lockRead();    			
+    		}
+    		this.lockParent(p, unlock);
     	}
     }    
 }
