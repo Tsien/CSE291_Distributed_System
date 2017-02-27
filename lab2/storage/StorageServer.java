@@ -64,6 +64,34 @@ public class StorageServer implements Storage, Command
         this(root, 0, 0);
     }
 
+    public void pruneDupeFiles(Path[] dupFilesLists)
+    {
+        for(Path path: dupFilesLists)
+        {
+            try
+            { 
+                if(true == (new File(rootdir + path.toString())).delete())
+                {
+                    Path parentDir = path.parent();
+                    while(!parentDir.isRoot())
+                    {
+                        File file = new File(rootdir + parentDir.toString());
+                        if(file.list().length == 0)
+                            file.delete();
+                        else
+                        {
+                            break;
+                        }
+                        parentDir = parentDir.parent();
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                System.out.println("could't delete files");
+            }
+        }
+    }
     /** Starts the storage server and registers it with the given naming
         server.
 
@@ -92,38 +120,12 @@ public class StorageServer implements Storage, Command
         //throw new UnsupportedOperationException("not implemented");
         hStorage = Stub.create(Storage.class, clientAddr);
         hCommand = Stub.create(Command.class, cmdAddr);
+
         try
         {
             Path dupFilesLists[];
             dupFilesLists = naming_server.register(hStorage, hCommand, Path.list(rootdir));
-
-            for(Path path: dupFilesLists)
-            {
-                try
-                { 
-                    System.out.println(rootdir);
-                    System.out.println(rootdir + path.toString());
-                    if(true == (new File(rootdir + path.toString())).delete())
-                    {
-                        Path parentDir = path.parent();
-                        while(!parentDir.isRoot())
-                        {
-                            File file = new File(rootdir + parentDir.toString());
-                            if(file.list().length == 0)
-                                file.delete();
-                            else
-                            {
-                                break;
-                            }
-                            parentDir = parentDir.parent();
-                        }
-                    }
-                }
-                catch(Exception e)
-                {
-                    System.out.println("could't delete files");
-                }
-            }
+            pruneDupeFiles(dupFilesLists);
         }
         catch(RMIException ex)
         {
