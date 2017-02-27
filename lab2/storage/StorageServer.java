@@ -238,9 +238,6 @@ public class StorageServer implements Storage, Command
             long sz = size(path);
             if(sz < offset)
             { 
-                System.out.println("appending");
-                System.out.print("data.length: ");
-                System.out.println(data.length);
                 fstream = new FileOutputStream(file, true);
                 while(sz++ < offset)
                 { 
@@ -256,7 +253,6 @@ public class StorageServer implements Storage, Command
         }
         catch(IOException ioEx)
         {
-            System.out.println("IoException");
             throw ioEx;
         }
         fstream.close();
@@ -264,16 +260,65 @@ public class StorageServer implements Storage, Command
 
     // The following methods are documented in Command.java.
     @Override
-    public synchronized boolean create(Path file)
+    public synchronized boolean create(Path path)
     {
-        throw new UnsupportedOperationException("not implemented");
+        if(null == path)
+            throw new NullPointerException();
+        if(path.isRoot())
+            return false;
+        File file = path.toFile(rootdir);
+        if(file.exists())
+            return false;
+        file.getParentFile().mkdirs();
+        try
+        {
+            file.createNewFile();
+        }
+        catch(IOException ex)
+        {
+            System.out.println("IOExcetipn got caught");
+            return false;
+        }
+        return true;
     }
 
     @Override
     public synchronized boolean delete(Path path)
     {    
-        System.out.println("deleting files");
-        return false;
+        boolean result = true;
+        if(null == path)
+            throw new NullPointerException();
+        if(path.isRoot())
+            return false;
+        File file = path.toFile(rootdir);
+        if(!file.exists())
+            return false;
+        if(file.isDirectory())
+        {
+            if(0 == file.list().length)
+            {
+                file.delete();
+            }
+            else
+            {
+                String filesToDel[] = file.list();
+                for(String delFile: filesToDel)
+                {
+                    if(false == this.delete(new Path(path, delFile)))
+                        result = false;
+                }
+                if(0 == file.list().length)
+                {
+                    file.delete();
+                }
+            }
+        }
+        else
+        {
+            file.delete();
+        }
+
+        return result;
     }
 
     @Override
