@@ -147,7 +147,8 @@ public class StorageServer implements Storage, Command
      */
     public void stop()
     {
-        //throw new UnsupportedOperationException("not implemented");
+        StorageSkt.stop();
+        CommandSkt.stop();
     }
 
     /** Called when the storage server has shut down.
@@ -189,7 +190,7 @@ public class StorageServer implements Storage, Command
     public synchronized byte[] read(Path path, long offset, int length)
         throws FileNotFoundException, IOException
     {
-        File file = new File(rootdir + path.toString());
+        File file = path.toFile(rootdir);
         if(offset < 0 || length < 0)
         {
             throw new IndexOutOfBoundsException();
@@ -220,7 +221,7 @@ public class StorageServer implements Storage, Command
     public synchronized void write(Path path, long offset, byte[] data)
         throws FileNotFoundException, IOException
     {
-        File file = new File(rootdir + path.toString());
+        File file = path.toFile(rootdir);
         if(offset < 0)
         {
             throw new IndexOutOfBoundsException();
