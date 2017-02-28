@@ -145,8 +145,12 @@ public class NamingServer implements Service, Registration
     *                         is waiting to obtain the lock.
     */
     @Override
-    public void lock(Path path, boolean exclusive) throws FileNotFoundException
+    public synchronized void lock(Path path, boolean exclusive) throws FileNotFoundException
     {
+    	
+    	System.out.println("Lock_Begin: current thread is " + Thread.currentThread()
+    	+ ". Asking for" + (exclusive ? " writing lock." : " reading lock"));
+    	
     	// sanity check
     	if (!this.fileSystem.containsKey(path)) {
     		throw new FileNotFoundException("Error: the object specified by " +
@@ -164,7 +168,6 @@ public class NamingServer implements Service, Registration
 			// e1.printStackTrace();
 			throw new IllegalStateException();
 		}
-    	
     	ReadWriteLock pLock = this.fileSystem.get(path).getpLock();
     	if (exclusive) {
     		try {
@@ -208,7 +211,10 @@ public class NamingServer implements Service, Registration
     			// make a copy
     			new Thread(new Replicator(pf, path, this.storages)).start();
     		}
-    	}    	
+    	}    
+    	
+    	System.out.println("Lock_End: current thread is " + Thread.currentThread()
+    	+ ". Asking for" + (exclusive ? " writing lock." : " reading lock"));
     }
 
     /** Unlocks a file or directory.
@@ -227,8 +233,11 @@ public class NamingServer implements Service, Registration
                          error.
     */
     @Override
-    public void unlock(Path path, boolean exclusive)
+    public synchronized void unlock(Path path, boolean exclusive)
     {
+    	System.out.println("Unlock_Begin: current thread is " + Thread.currentThread()
+    	+ ". Asking for " + (exclusive ? "writing lock." : "reading lock"));
+    	
         if (!this.fileSystem.containsKey(path)) {
         	throw new IllegalArgumentException();
         }
@@ -244,6 +253,9 @@ public class NamingServer implements Service, Registration
         else {
         	this.fileSystem.get(path).getpLock().unlockRead();
         }
+        
+        System.out.println("Unlock_End: current thread is " + Thread.currentThread()
+        + ". Asking for " + (exclusive ? "writing lock." : "reading lock"));
     }
 
     /** Determines whether a path refers to a directory.

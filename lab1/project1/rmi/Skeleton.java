@@ -196,7 +196,7 @@ public class Skeleton<T>
     {
     	// TODO
     	// System.out.println("==========Exception on the server end============");
-    	exception.printStackTrace();
+    	// exception.printStackTrace();
     }
 
     /** Starts the skeleton server.
@@ -264,7 +264,7 @@ public class Skeleton<T>
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				// System.out.println("==========Skeleton: IOException in stop()==========");
-				e.printStackTrace();
+				// e.printStackTrace();
 			}
     	}
     	serverSocket = null;

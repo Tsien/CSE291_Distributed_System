@@ -41,9 +41,11 @@ public class ReadWriteLock {
 	 */
 	public synchronized void lockRead() throws InterruptedException {
 		Thread cur = Thread.currentThread();
+//		System.out.println("IN lockRead: current thread is " + cur);
 		while (!canGrantRead(cur)) {
 			wait();
 		}
+//		System.out.println("after IN lockRead: current thread is " + cur);
 		readingThreads.put(cur, readingThreads.getOrDefault(cur, 0) + 1);
 	}
 	
@@ -53,6 +55,7 @@ public class ReadWriteLock {
 	 */
 	public synchronized void unlockRead() {
 		Thread cur = Thread.currentThread();
+//		System.out.println("IN unLockRead: current thread is " + cur);
 		int val = this.readingThreads.get(cur);
 		if (1 == val) {
 			readingThreads.remove(cur);

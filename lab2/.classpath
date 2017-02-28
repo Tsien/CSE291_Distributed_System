@@ -4,6 +4,5 @@
 	<classpathentry excluding="java/src/" kind="src" path="fuse"/>
 	<classpathentry kind="src" path="fuse/java/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="reference-rmi.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
