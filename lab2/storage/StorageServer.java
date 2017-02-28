@@ -322,9 +322,22 @@ public class StorageServer implements Storage, Command
     }
 
     @Override
-    public synchronized boolean copy(Path file, Storage server)
+    public synchronized boolean copy(Path path, Storage server)
         throws RMIException, FileNotFoundException, IOException
     {
-        throw new UnsupportedOperationException("not implemented");
+        if(null == path || null == server)
+            throw new NullPointerException();
+        try
+        {   long copyLen = 0;
+            copyLen = server.size(path);
+            byte dataRead[] = server.read(path, 0, (int) copyLen);
+            this.create(path);
+            this.write(path, 0, dataRead);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
     }
 }
