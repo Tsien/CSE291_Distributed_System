@@ -57,6 +57,7 @@ public class ReplicationTest extends NamingTest
         // Access the file to be replicated a large number of times for reading.
         for(access_counter = 0; access_counter < ACCESS_COUNT; ++access_counter)
         {
+        	System.out.println("TEST_CASE Replication : reading " + access_counter + " times.");
             try
             {
                 service_stub.lock(replicate_file, false);

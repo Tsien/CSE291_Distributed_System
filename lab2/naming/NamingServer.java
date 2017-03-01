@@ -210,7 +210,7 @@ public class NamingServer implements Service, Registration
     			System.out.println("INSIDE Lock(): need replication");
     			pf.clearReadAccess();
     			// make a copy
-    			new Thread(new Replicator(pf, path)).start();
+    			new Thread(new Replicator(pf, path, this.storages)).start();
     		}
     	}    
     	
