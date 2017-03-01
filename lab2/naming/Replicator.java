@@ -51,7 +51,6 @@ public class Replicator implements Runnable {
 		List<StorageStubs> res = new ArrayList<StorageStubs>(allStbs);
 
 		this.pickedStb = res.get(0);
-//		System.out.println("Replicator : the selected storage is " + this.pf.getStbs().get(0).getClient_stub());
 		
 		try {
 			this.pickedStb.getCMD_stub().copy(file, this.pf.getStbs().iterator().next().getClient_stub());

@@ -146,10 +146,7 @@ public class NamingServer implements Service, Registration
     */
     @Override
     public void lock(Path path, boolean exclusive) throws FileNotFoundException
-    {
-//    	System.out.println("Lock_Begin: current thread is " + Thread.currentThread()
-//    	+ ". Asking for" + (exclusive ? " writing lock." : " reading lock"));
-    	
+    {    	
     	// sanity check
     	if (!this.fileSystem.containsKey(path)) {
     		throw new FileNotFoundException("Error: the object specified by " +
@@ -169,7 +166,6 @@ public class NamingServer implements Service, Registration
 		}
     	ReadWriteLock pLock = this.fileSystem.get(path).getpLock();
     	if (exclusive) {
-//    		System.out.println("NamingServer_lock() : try to grant write lock.");
     		try {
 				pLock.lockWrite();
 			} catch (InterruptedException e) {
@@ -182,7 +178,6 @@ public class NamingServer implements Service, Registration
     		// but one to be deleted
     		HashSet<StorageStubs> stbs = this.fileSystem.get(path).getStbs();
     		Iterator<StorageStubs> it = stbs.iterator();
-//    		System.out.println("NamingServer_lock() : gonna delete " + stbs.size() + " stbs.");
     		while (stbs.size() > 1) {
     			try {
 					it.next().getCMD_stub().delete(path);
@@ -208,19 +203,14 @@ public class NamingServer implements Service, Registration
         	// duplication
     		// the file is replicated once for every 20 read requests
     		if (pf.getReadAccess() >= 20) {
-//    			System.out.println("INSIDE Lock(): need replication");
     			pf.clearReadAccess();
     			// make a copy
     			Replicator copier = new Replicator(pf, path, this.storages);
     			new Thread(copier).start();
     			// register storage server
-    			// System.out.println("FileSystem: " + this.fileSystem.get(path).getStbs().size());
     			this.createFile(path, copier.getStub());
     		}
     	}    
-    	
-//    	System.out.println("Lock_End: " + Thread.currentThread()
-//    	+ " got " + (exclusive ? " writing lock." : " reading lock"));
     }
 
     /** Unlocks a file or directory.
@@ -240,10 +230,7 @@ public class NamingServer implements Service, Registration
     */
     @Override
     public void unlock(Path path, boolean exclusive)
-    {
-//    	System.out.println("Unlock_Begin: " + Thread.currentThread()
-//    	+ " asking for unlocking " + (exclusive ? "writing lock." : "reading lock"));
-    	
+    {    	
         if (!this.fileSystem.containsKey(path)) {
         	throw new IllegalArgumentException();
         }
@@ -260,9 +247,6 @@ public class NamingServer implements Service, Registration
         else {
         	this.fileSystem.get(path).getpLock().unlockRead();
         }
-        
-//        System.out.println("Unlock_End: " + Thread.currentThread()
-//        + " got " + (exclusive ? "writing unlock." : "reading unlock"));
     }
 
     /** Determines whether a path refers to a directory.
@@ -435,7 +419,6 @@ public class NamingServer implements Service, Registration
     	PathInfo pt = this.fileSystem.get(path);
     	HashSet<StorageStubs> stbs = pt.getStbs();
     	try {
-//    		System.out.println("NamingServer's gonna delete " + stbs.size() + " stbs.");
     		for (StorageStubs stb : stbs) {
     			if (!stb.getCMD_stub().delete(path)) {
     				return false;

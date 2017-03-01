@@ -2,8 +2,6 @@ package storage;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
-//import java.lang.IndexOutofBoundsException;
 
 import common.*;
 import rmi.*;
@@ -43,8 +41,8 @@ public class StorageServer implements Storage, Command
     //Registartion register;
     public StorageServer(File root, int client_port, int command_port)
     { 
-        client_port  = client_port; 
-        command_port = command_port;
+        this.client_port  = client_port; 
+        this.command_port = command_port;
         rootdir = root;
     }
 

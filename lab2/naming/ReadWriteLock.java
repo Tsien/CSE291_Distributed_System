@@ -1,10 +1,5 @@
 package naming;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import sun.misc.Queue;
-
 /**
  * <p>
  * A custome Lock
@@ -37,11 +32,9 @@ public class ReadWriteLock {
 	 * @throws InterruptedException 
 	 */
 	public synchronized void lockRead() throws InterruptedException {
-//		System.out.println("IN lockRead: current thread is " + cur);
 		while (this.writeAccess > 0 || this.writeRequests > 0) {
 			wait();
 		}
-//		System.out.println("after IN lockRead: current thread is " + cur);
 		this.readAccess++;
 	}
 	
