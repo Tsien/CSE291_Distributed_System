@@ -230,6 +230,8 @@ public class ReplicationTest extends NamingTest
             }
 
             // Check that the request gives the correct server.
+            System.out.println("INSIDE TEST : The server is " + server);
+            System.out.println("INSIDE TEST : The expected server is " + hosting_stub);
             if(!server.equals(hosting_stub))
             {
                 failure(new TestFailed("naming server provided the wrong " +

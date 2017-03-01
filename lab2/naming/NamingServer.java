@@ -207,9 +207,10 @@ public class NamingServer implements Service, Registration
         	// duplication
     		// the file is replicated once for every 20 read requests
     		if (pf.getReadAccess() >= 20) {
+    			System.out.println("INSIDE Lock(): need replication");
     			pf.clearReadAccess();
     			// make a copy
-    			new Thread(new Replicator(pf, path, this.storages)).start();
+    			new Thread(new Replicator(pf, path)).start();
     		}
     	}    
     	
