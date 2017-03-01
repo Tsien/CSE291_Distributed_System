@@ -77,18 +77,22 @@ public class LockTest extends NamingTest
     @Override
     protected void perform() throws TestFailed
     {
-//        testBadPaths();
+        testBadPaths();
 
-        testSharing(root, false, root, false);/*
+        testSharing(root, false, root, false);
         testSharing(file1, true, file2, true);
         testSharing(file1, true, directory, false);
 
+    	System.out.println("Perform: start to call testExclusion");
         testExclusion(root, false, root, true);
+    	System.out.println("Perform: end calling testExclusion");
+
+        
         testExclusion(root, true, root, false);
         testExclusion(root, true, root, true);
         testExclusion(root, true, directory, false);
         testExclusion(directory, false, root, true);
-        testExclusion(directory, true, root, true);*/
+        testExclusion(directory, true, root, true);
     }
 
     /** Checks that two threads are able to lock the two given paths
@@ -194,17 +198,20 @@ public class LockTest extends NamingTest
         exclusive_resume = false;
         exclusive_finished = false;
 
+        System.out.println("=============Inside testExclusion==========");
         // Start the two threads.
         new Thread(new FirstExclusiveUser(first_path, first_exclusive)).start();
         new Thread(new SecondExclusiveUser(second_path,
                                            second_exclusive)).start();
 
+        System.out.println("=============Inside testExclusion : before set timer==========");
         // Create a timer and a timeout task that will wake the first thread
         // after a fixed minimum time period. The first thread will be sleeping
         // with the lock taken. For the test to succeed, the second thread must
         // not take the lock during this sleep.
         Timer   timer = new Timer();
         timer.schedule(new WakeTask(), EXCLUSIVE_TEST_DELAY);
+        System.out.println("=============Inside testExclusion : after set timer==========");
 
         // Wait for the second thread to release the lock. If the test succeeds,
         // the only way this can happen is if the first thread has also released
@@ -221,6 +228,7 @@ public class LockTest extends NamingTest
                 catch(InterruptedException e) { }
             }
         }
+        System.out.println("=============Inside testExclusion : after waiting==========");
 
         // Cancel the wake task early if the test fails. In any case, the timer
         // must be cancelled.
@@ -450,6 +458,7 @@ public class LockTest extends NamingTest
         FirstExclusiveUser(Path path, boolean exclusive)
         {
             super(path, exclusive);
+        	System.out.println("Spawned the first thread " + Thread.currentThread());
         }
 
         /** Notifies the second thread that it should try to take the lock, and
@@ -494,6 +503,7 @@ public class LockTest extends NamingTest
         SecondExclusiveUser(Path path, boolean exclusive)
         {
             super(path, exclusive);
+            System.out.println("Spawned the second thread : " + Thread.currentThread());
         }
 
         /** Ensures that the second thread does not try to take the lock before
@@ -550,6 +560,7 @@ public class LockTest extends NamingTest
         @Override
         public void run()
         {
+        	System.out.println("WakeTask starts runing " + Thread.currentThread());
             synchronized(LockTest.this)
             {
                 while(!exclusive_locked && !wake_all)
@@ -564,6 +575,7 @@ public class LockTest extends NamingTest
                 exclusive_resume = true;
                 LockTest.this.notifyAll();
             }
+            System.out.println("WakeTask ends runing " + Thread.currentThread());
         }
     }
 
@@ -604,7 +616,7 @@ public class LockTest extends NamingTest
         public void run()
         {
             started();
-
+            System.out.println("Run()_Begin: " + Thread.currentThread() + " starts running...");
             // Lock the path.
             try
             {
@@ -631,6 +643,7 @@ public class LockTest extends NamingTest
             }
 
             released();
+            System.out.println("Run()_End: " + Thread.currentThread() + " finished running...");
         }
     }
 }
