@@ -29,7 +29,12 @@ public class Replicator implements Runnable {
 	 * All registered storage servers
 	 */
 	private HashSet<StorageStubs> allStbs;
-		
+	
+	/**
+	 * The selected stub
+	 */
+	private StorageStubs pickedStb;
+	
 	public Replicator(PathInfo pf, Path file, List<StorageStubs> stbs) {
 		this.pf = pf;
 		this.file = file;
@@ -38,29 +43,26 @@ public class Replicator implements Runnable {
 	
 	@Override
 	public void run() {
-		StorageStubs stb = this.pickStb();
-		System.out.println("Replicator : the selected storage is " + stb.getClient_stub());
-		// TODO how to get the new stub ???
+		this.allStbs.removeAll(this.pf.getStbs());
+		if (this.allStbs.isEmpty()) {
+			System.out.println("Error: there is no available storage servers.");
+			return ;
+		}
+		List<StorageStubs> res = new ArrayList<StorageStubs>(allStbs);
+
+		this.pickedStb = res.get(0);
+//		System.out.println("Replicator : the selected storage is " + this.pf.getStbs().get(0).getClient_stub());
+		
 		try {
-			stb.getCMD_stub().copy(file, this.pf.getStbs().get(0).getClient_stub());
+			this.pickedStb.getCMD_stub().copy(file, this.pf.getStbs().iterator().next().getClient_stub());
 		} catch (RMIException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		pf.addStbs(stb);
+		pf.addStbs(this.pickedStb);
 	}
 	
-	/**
-	 * pick a storage server from available ones
-	 * @return StorageStubs a storage server
-	 */
-	private StorageStubs pickStb() {
-		allStbs.removeAll(this.pf.getStbs());
-		if (allStbs.isEmpty()) {
-			System.out.println("Error: there is no available storage servers.");
-			return null;
-		}
-		List<StorageStubs> res = new ArrayList<StorageStubs>(allStbs);
-		return res.get(0);
+	public StorageStubs getStub() {
+		return this.pickedStb;
 	}
 }

@@ -57,7 +57,6 @@ public class ReplicationTest extends NamingTest
         // Access the file to be replicated a large number of times for reading.
         for(access_counter = 0; access_counter < ACCESS_COUNT; ++access_counter)
         {
-        	System.out.println("TEST_CASE Replication : reading " + access_counter + " times.");
             try
             {
                 service_stub.lock(replicate_file, false);
@@ -231,8 +230,6 @@ public class ReplicationTest extends NamingTest
             }
 
             // Check that the request gives the correct server.
-            System.out.println("INSIDE TEST : The server is " + server);
-            System.out.println("INSIDE TEST : The expected server is " + hosting_stub);
             if(!server.equals(hosting_stub))
             {
                 failure(new TestFailed("naming server provided the wrong " +
