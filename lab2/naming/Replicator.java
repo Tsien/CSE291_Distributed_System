@@ -47,7 +47,7 @@ public class Replicator implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// pf.addStbs(stb);
+		pf.addStbs(stb);
 	}
 	
 	/**
