@@ -11,8 +11,8 @@ PID:   A53087777
 Email: shl423@eng.ucsd.edu
 
 Group member3:
-Name:  
-PID:   
-Email: 
+Name:  Inyoung Woo
+PID:   A53031053 
+Email: inwoo@eng.ucsd.edu
 
 
