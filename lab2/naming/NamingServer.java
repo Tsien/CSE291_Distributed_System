@@ -146,7 +146,7 @@ public class NamingServer implements Service, Registration
     */
     @Override
     public void lock(Path path, boolean exclusive) throws FileNotFoundException
-    {
+    {    	
     	// sanity check
     	if (!this.fileSystem.containsKey(path)) {
     		throw new FileNotFoundException("Error: the object specified by " +
@@ -164,7 +164,6 @@ public class NamingServer implements Service, Registration
 			// e1.printStackTrace();
 			throw new IllegalStateException();
 		}
-    	
     	ReadWriteLock pLock = this.fileSystem.get(path).getpLock();
     	if (exclusive) {
     		try {
@@ -177,17 +176,17 @@ public class NamingServer implements Service, Registration
         	// invalidation
     		// exclusive access = write request -> causes all copies of the file 
     		// but one to be deleted
-    		List<StorageStubs> stbs = this.fileSystem.get(path).getStbs();
+    		HashSet<StorageStubs> stbs = this.fileSystem.get(path).getStbs();
+    		Iterator<StorageStubs> it = stbs.iterator();
     		while (stbs.size() > 1) {
-    			// deleted stale copies
-    			StorageStubs stb = stbs.get(0);
-    			stbs.remove(0);
     			try {
-					stb.getCMD_stub().delete(path);
+					it.next().getCMD_stub().delete(path);
 				} catch (RMIException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+    			// deleted stale copies
+    			it.remove();
     		}
     		this.fileSystem.get(path).setStbs(stbs);
     	}
@@ -206,9 +205,12 @@ public class NamingServer implements Service, Registration
     		if (pf.getReadAccess() >= 20) {
     			pf.clearReadAccess();
     			// make a copy
-    			new Thread(new Replicator(pf, path, this.storages)).start();
+    			Replicator copier = new Replicator(pf, path, this.storages);
+    			new Thread(copier).start();
+    			// register storage server
+    			this.createFile(path, copier.getStub());
     		}
-    	}    	
+    	}    
     }
 
     /** Unlocks a file or directory.
@@ -228,7 +230,7 @@ public class NamingServer implements Service, Registration
     */
     @Override
     public void unlock(Path path, boolean exclusive)
-    {
+    {    	
         if (!this.fileSystem.containsKey(path)) {
         	throw new IllegalArgumentException();
         }
@@ -236,7 +238,8 @@ public class NamingServer implements Service, Registration
 			this.lockParent(path, false);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// e.printStackTrace();
+			System.out.println("Error: fail to unlock parent path.");
 		}
         if (exclusive) {
         	this.fileSystem.get(path).getpLock().unlockWrite();
@@ -348,9 +351,10 @@ public class NamingServer implements Service, Registration
     	}
     	// add file path to the fileSystem directory tree
     	this.fileSystem.put(file, new PathInfo(true));
-    	this.fileSystem.get(file).addStbs(new StorageStubs(client, cmd));
+    	StorageStubs stb = new StorageStubs(client, cmd);
+    	this.fileSystem.get(file).addStbs(stb);
     	// add parent path to the fileSystem directory tree
-    	this.registerParent(file);
+    	this.createFile(file, stb);
         return true;
     }
 
@@ -386,7 +390,7 @@ public class NamingServer implements Service, Registration
     	// add a directory path to the fileSystem directory tree
     	this.fileSystem.put(directory, new PathInfo(false));
     	// add parent path to the fileSystem directory tree
-    	this.registerParent(directory);
+    	this.createDirect(directory);
     	return true;
     }
 
@@ -413,20 +417,17 @@ public class NamingServer implements Service, Registration
     		throw new FileNotFoundException("Error: the object or parent directory does not exist.");
     	}
     	PathInfo pt = this.fileSystem.get(path);
-    	if (pt.isFile()) {
-        	// Delete file on the storage server
-        	List<StorageStubs> stbs = pt.getStbs();
-        	try {
-        		for (StorageStubs stb : stbs) {
-        			if (!stb.getCMD_stub().delete(path)) {
-        				return false;
-        			}    			
-        		}
-    		} catch (RMIException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
+    	HashSet<StorageStubs> stbs = pt.getStbs();
+    	try {
+    		for (StorageStubs stb : stbs) {
+    			if (!stb.getCMD_stub().delete(path)) {
+    				return false;
+    			}
     		}
-    	}
+		} catch (RMIException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     	this.fileSystem.remove(path);
 		this.fileSystem.get(p).rmvChild(path);
         return true;
@@ -453,9 +454,14 @@ public class NamingServer implements Service, Registration
     	if (!this.fileSystem.containsKey(file) || !this.fileSystem.get(file).isFile()) {
     		throw new FileNotFoundException("Error: the file does not exist.");
     	}
-    	List<StorageStubs> stbs = this.fileSystem.get(file).getStbs();
+    	HashSet<StorageStubs> stbs = this.fileSystem.get(file).getStbs();
+    	Iterator<StorageStubs> it = stbs.iterator();
     	int idx = ThreadLocalRandom.current().nextInt(stbs.size());
-        return stbs.get(idx).getClient_stub();
+    	while (idx > 0) {
+    		--idx;
+    		it.next();
+    	}
+        return it.next().getClient_stub();
     }
 
     // The method register is documented in Registration.java.
@@ -472,8 +478,9 @@ public class NamingServer implements Service, Registration
         }
         
         // Add storage server to the register table
+		StorageStubs stb = new StorageStubs(client_stub, command_stub);
         this.regTable.put(client_stub, command_stub);
-        this.storages.add(new StorageStubs(client_stub, command_stub));
+        this.storages.add(stb);
         
         // Register new files 
         List<Path> dupFiles = new ArrayList<>();
@@ -486,8 +493,8 @@ public class NamingServer implements Service, Registration
         	}
         	else {
         		this.fileSystem.put(f, new PathInfo(true));
-        		this.fileSystem.get(f).addStbs(new StorageStubs(client_stub, command_stub));
-                this.registerParent(f);
+        		this.fileSystem.get(f).addStbs(stb);
+        		this.createFile(f, stb);
         	}
         }
         Path[] res = new Path[dupFiles.size()];
@@ -495,25 +502,41 @@ public class NamingServer implements Service, Registration
     }
  
     /**
-     * <p>
-     * Register all parent paths to the filesystem directory tree
-     * 
-     * <p>
-     * Note that we register directory on the naming server without
-     * actually creating it on the storage server
-     * 
-     * @param file
+     * add parent path to the filesystem
+     * @param file a path to a file
+     * @param stb the storage server that stores the file
      */
-    private void registerParent(Path file) {
-    	if (!file.isRoot()) {
-    		Path p = file.parent();
+    private void createFile(Path file, StorageStubs stb) {
+    	Path p = null;
+    	do {
+    		p = file.parent();
     		if (!this.fileSystem.containsKey(p)) {
     			this.fileSystem.put(p, new PathInfo(false));
-    			// register parent directory recursively
-    			this.registerParent(p);
     		}
 			this.fileSystem.get(p).addChild(file);
-    	}
+    		this.fileSystem.get(p).addStbs(stb);
+    		file = p;
+    	} while(!p.isRoot());
+    }
+    
+    /**
+     * add parent path to the filesystem
+     * @param dir A path to the target directory
+     */
+    private void createDirect(Path dir) {
+    	Path p = null;
+    	do {
+    		p = dir.parent();
+    		if (this.fileSystem.containsKey(p)) {
+    			this.fileSystem.get(p).addChild(dir);
+    			break;
+    		}
+    		else {
+    			this.fileSystem.put(p, new PathInfo(false));
+    		}
+    		this.fileSystem.get(p).addChild(dir);
+    		dir = p;
+    	} while (!p.isRoot());
     }
 
     /**

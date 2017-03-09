@@ -30,37 +30,38 @@ public class Replicator implements Runnable {
 	 */
 	private HashSet<StorageStubs> allStbs;
 	
+	/**
+	 * The selected stub
+	 */
+	private StorageStubs pickedStb;
+	
 	public Replicator(PathInfo pf, Path file, List<StorageStubs> stbs) {
 		this.pf = pf;
 		this.file = file;
-		this.allStbs = new HashSet<StorageStubs>(stbs);
+		this.allStbs = new HashSet<StorageStubs>(stbs);;
 	}
 	
 	@Override
 	public void run() {
-		StorageStubs stb = this.pickStb();
-		// TODO Auto-generated method stub
+		this.allStbs.removeAll(this.pf.getStbs());
+		if (this.allStbs.isEmpty()) {
+			System.out.println("Error: there is no available storage servers.");
+			return ;
+		}
+		List<StorageStubs> res = new ArrayList<StorageStubs>(allStbs);
+
+		this.pickedStb = res.get(0);
+		
 		try {
-			stb.getCMD_stub().copy(file, stb.getClient_stub());
+			this.pickedStb.getCMD_stub().copy(file, this.pf.getStbs().iterator().next().getClient_stub());
 		} catch (RMIException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		pf.addStbs(stb);
+		pf.addStbs(this.pickedStb);
 	}
 	
-    /**
-     * pick a storage server from available ones
-     * @return StorageStubs a storage server
-     */
-    private StorageStubs pickStb() {
-    	allStbs.removeAll(this.pf.getStbs());
-    	if (allStbs.isEmpty()) {
-    		System.out.println("Error: there is no available storage servers.");
-    		return null;
-    	}
-    	List<StorageStubs> res = new ArrayList<StorageStubs>(allStbs);
-    	return res.get(0);
-    }
-
+	public StorageStubs getStub() {
+		return this.pickedStb;
+	}
 }

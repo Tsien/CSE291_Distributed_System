@@ -1,8 +1,6 @@
 package naming;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import common.Path;
 
 /**
@@ -24,7 +22,7 @@ public class PathInfo {
 	/**
 	 * Storages that store this path
 	 */
-	private List<StorageStubs> stbs;
+	private HashSet<StorageStubs> stbs;
 
 	/**
 	 * A lock belongs to this path
@@ -39,7 +37,7 @@ public class PathInfo {
 	public PathInfo(boolean tag) {
 		this.clearReadAccess();
 		this.children = new HashSet<Path>();
-		this.stbs = new ArrayList<StorageStubs>();
+		this.stbs = new HashSet<StorageStubs>();
 		this.setpLock(new ReadWriteLock());
 		this.setFile(tag);
 	}
@@ -67,7 +65,7 @@ public class PathInfo {
 	/**
 	 * @return the stbs
 	 */
-	public List<StorageStubs> getStbs() {
+	public HashSet<StorageStubs> getStbs() {
 		return stbs;
 	}
 
@@ -81,7 +79,7 @@ public class PathInfo {
 	/**
 	 * @param stb the stb to add
 	 */
-	public void setStbs(List<StorageStubs> stb) {
+	public void setStbs(HashSet<StorageStubs> stb) {
 		this.stbs = stb;
 	}
 	

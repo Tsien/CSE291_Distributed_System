@@ -120,7 +120,7 @@ public class Worker<T> extends Thread {
 			targetMethod = objClass.getMethod(methodName, argsType);
 		} catch (NoSuchMethodException | SecurityException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			// e1.printStackTrace();
 			// System.out.println("==========Worker: Exp when runMethod1==========");
 			skt.service_error(new RMIException(e1));
 			return new RMIData(null, e1);
@@ -141,7 +141,7 @@ public class Worker<T> extends Thread {
 				return new RMIData(null, (Exception)e1.getTargetException());				
 			} catch (IllegalAccessException | IllegalArgumentException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				// e.printStackTrace();
 				// System.out.println("==========Worker: Exp when runMethod2==========");
 				skt.service_error(new RMIException(e));
 				return new RMIData(null, new RMIException(e));

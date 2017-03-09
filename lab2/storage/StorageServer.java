@@ -2,8 +2,6 @@ package storage;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
-//import java.lang.IndexOutofBoundsException;
 
 import common.*;
 import rmi.*;
@@ -43,8 +41,8 @@ public class StorageServer implements Storage, Command
     //Registartion register;
     public StorageServer(File root, int client_port, int command_port)
     { 
-        client_port  = client_port; 
-        command_port = command_port;
+        this.client_port  = client_port; 
+        this.command_port = command_port;
         rootdir = root;
     }
 
@@ -147,7 +145,8 @@ public class StorageServer implements Storage, Command
      */
     public void stop()
     {
-        //throw new UnsupportedOperationException("not implemented");
+        StorageSkt.stop();
+        CommandSkt.stop();
     }
 
     /** Called when the storage server has shut down.
@@ -189,7 +188,7 @@ public class StorageServer implements Storage, Command
     public synchronized byte[] read(Path path, long offset, int length)
         throws FileNotFoundException, IOException
     {
-        File file = new File(rootdir + path.toString());
+        File file = path.toFile(rootdir);
         if(offset < 0 || length < 0)
         {
             throw new IndexOutOfBoundsException();
@@ -220,7 +219,7 @@ public class StorageServer implements Storage, Command
     public synchronized void write(Path path, long offset, byte[] data)
         throws FileNotFoundException, IOException
     {
-        File file = new File(rootdir + path.toString());
+        File file = path.toFile(rootdir);
         if(offset < 0)
         {
             throw new IndexOutOfBoundsException();
@@ -322,9 +321,22 @@ public class StorageServer implements Storage, Command
     }
 
     @Override
-    public synchronized boolean copy(Path file, Storage server)
+    public synchronized boolean copy(Path path, Storage server)
         throws RMIException, FileNotFoundException, IOException
     {
-        throw new UnsupportedOperationException("not implemented");
+        if(null == path || null == server)
+            throw new NullPointerException();
+        try
+        {   long copyLen = 0;
+            copyLen = server.size(path);
+            byte dataRead[] = server.read(path, 0, (int) copyLen);
+            this.create(path);
+            this.write(path, 0, dataRead);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
     }
 }
