@@ -1,1 +1,12 @@
-//
+FROM gelog/hadoop
+
+
+// COPY the text data files
+
+COPY ./Data/text.txt /MyData/text.txt
+
+
+
+
+
+
