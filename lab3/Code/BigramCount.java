@@ -1,7 +1,10 @@
 /**
  * @author  Feichao (feqian@ucsd.edu)
  * <p>
- * Modified based on the WordCount example
+ *  modify the WordCount example to create a BigramExample,
+ *  which counts the number of bigrams within the corpus. 
+ * Notes: 
+ * consider an input file which has a single line. 
  */
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -22,6 +25,7 @@ public class BigramCount {
        extends Mapper<Object, Text, Text, IntWritable>{
 
     private final static IntWritable one = new IntWritable(1);
+    /*
     private Text word = new Text();
 
     public void map(Object key, Text value, Context context
@@ -31,6 +35,20 @@ public class BigramCount {
         word.set(itr.nextToken());
         context.write(word, one);
       }
+    }
+    */
+    String prev = null;
+    String cur = null;
+    private Text bigrams = new Text(); 
+    public void map(Object key, Text value, Context context
+                    ) throws IOException, InterruptedException {
+      StringTokenizer itr = new StringTokenizer(value.toString());
+      prev = itr.nextToken();
+      while (itr.hasMoreTokens()) {
+        cur = itr.nextToken();
+        bigrams.set(prev + ", " + cur);
+        context.write(bigrams, one);
+      }     
     }
   }
 
@@ -52,8 +70,8 @@ public class BigramCount {
 
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
-    Job job = Job.getInstance(conf, "word count");
-    job.setJarByClass(WordCount.class);
+    Job job = Job.getInstance(conf, "bigrams count");
+    job.setJarByClass(BigramCount.class);
     job.setMapperClass(TokenizerMapper.class);
     job.setCombinerClass(IntSumReducer.class);
     job.setReducerClass(IntSumReducer.class);

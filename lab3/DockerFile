@@ -1,10 +1,28 @@
+# Pull base image.
 FROM gelog/hadoop
+MAINTAINER Feichao Qian <feqian@ucsd.edu>
 
 
-// COPY the text data files
+####################
+# HADOOP
+####################
 
-COPY ./Data/text.txt /MyData/text.txt
+ENV HADOOP_VERSION	2.6.0
+ENV HADOOP_HOME		/usr/local/hadoop
+ENV HADOOP_OPTS		-Djava.library.path=/usr/local/hadoop/lib/native
+ENV PATH		$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
+# COPY files
+COPY ./Data/ /MyData/
+COPY ./Code/ /MyCode/
+
+# Compile 
+
+RUN mkdir wordcount_classes \
+	&& javac -classpath ${HADOOP_HOME}/hadoop-${HADOOP_VERSION}-core.jar -d wordcount_classes ./MyCode/BigramCount.java \
+	&& jar -cvf /usr/joe/wordcount.jar -C wordcount_classes/ .
+
+bin/hadoop jar /usr/joe/wordcount.jar org.myorg.WordCount /usr/joe/wordcount/input /usr/joe/wordcount/output
 
 
 
