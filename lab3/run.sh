@@ -30,8 +30,8 @@ printf "\n>>Start to build a Hadoop cluster ...\n\n"
 #    myhadoop /bin/bash
 docker run -d --name hdfs-namenode \
     -h hdfs-namenode -p 50070:50070 \
-    myhadoop hdfs namenode #&& \
-#docker logs -f hdfs-namenode
+    myhadoop hdfs namenode 
+
 printf "\n>>Succeed to start The NameNode ...\n\n"
 
 #============================================================================
@@ -41,8 +41,7 @@ for (( i = 1; i <= 4; i++ )); do
 	docker run -d --name hdfs-datanode"$i" \
 	    -h hdfs-datanode1 -p 5007"$i":5007"$i" \
 	    --link=hdfs-namenode:hdfs-namenode \
-	    myhadoop hdfs datanode #&& \
-	#docker logs -f "hdfs-datanode$i"	
+	    myhadoop hdfs datanode 	
 	printf "\n>>Succeed to start The DataNode$i ...\n\n"
 done
 
@@ -55,14 +54,12 @@ docker run -d --name yarn \
         -p 8042:8042 \
         --link=hdfs-namenode:hdfs-namenode \
         --link=hdfs-datanode1:hdfs-datanode1 \
-        --link=hdfs-datanode1:hdfs-datanode2 \
-        --link=hdfs-datanode1:hdfs-datanode3 \
-        --link=hdfs-datanode1:hdfs-datanode4 \
+        --link=hdfs-datanode2:hdfs-datanode2 \
+        --link=hdfs-datanode3:hdfs-datanode3 \
+        --link=hdfs-datanode4:hdfs-datanode4 \
         -v $HOME/data/hadoop/hdfs:/data \
-        myhadoop start-yarn.sh #&& \
-#docker logs -f yarn
+        myhadoop start-yarn.sh 
 printf "\n>>Succeed to start YARN ...\n\n"
-# TODO: Show text contents
 
 #############################################################################
 # Task 2: Run WordCount example to Confirm cluster is working
@@ -75,9 +72,9 @@ printf "\n>>Start to Run WordCount example ...\n\n"
 docker run --rm \
         --link=hdfs-namenode:hdfs-namenode \
         --link=hdfs-datanode1:hdfs-datanode1 \
-        --link=hdfs-datanode1:hdfs-datanode2 \
-        --link=hdfs-datanode1:hdfs-datanode3 \
-        --link=hdfs-datanode1:hdfs-datanode4 \
+        --link=hdfs-datanode2:hdfs-datanode2 \
+        --link=hdfs-datanode3:hdfs-datanode3 \
+        --link=hdfs-datanode4:hdfs-datanode4 \
         myhadoop \
         hadoop fs -put /MyData/text.txt /text.txt
 
@@ -93,9 +90,9 @@ docker run --rm \
 #	3. Check the result
 docker run --rm --link=hdfs-namenode:hdfs-namenode \
         --link=hdfs-datanode1:hdfs-datanode1 \
-        --link=hdfs-datanode1:hdfs-datanode2 \
-        --link=hdfs-datanode1:hdfs-datanode3 \
-        --link=hdfs-datanode1:hdfs-datanode4 \
+        --link=hdfs-datanode2:hdfs-datanode2 \
+        --link=hdfs-datanode3:hdfs-datanode3 \
+        --link=hdfs-datanode4:hdfs-datanode4 \
         myhadoop \
         hadoop fs -cat /result/\*
 
@@ -118,17 +115,15 @@ docker run --rm \
 #	2. Check the result
 docker run --rm --link=hdfs-namenode:hdfs-namenode \
         --link=hdfs-datanode1:hdfs-datanode1 \
-        --link=hdfs-datanode1:hdfs-datanode2 \
-        --link=hdfs-datanode1:hdfs-datanode3 \
-        --link=hdfs-datanode1:hdfs-datanode4 \
+        --link=hdfs-datanode2:hdfs-datanode2 \
+        --link=hdfs-datanode3:hdfs-datanode3 \
+        --link=hdfs-datanode4:hdfs-datanode4 \
         myhadoop \
         hadoop fs -cat /bi_result/\* > ./Data/result.txt 
 
 #============================================================================
 #	3. Output stats
 printf "\n\n================================================================\n"
-
-
 cd ./Code
 javac BigramStat.java
 java BigramStat
