@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
-
+import java.io.FileWriter;
 /**
  *  @author  Feichao (feqian@ucsd.edu)
  *  <p>
@@ -38,7 +38,17 @@ public class BigramStat {
 			total += tmp.count;
 		}
 		Collections.sort(bgm);
-		
+		FileWriter writer = null;
+		try {
+			writer = new FileWriter(file);
+			for(Bigrams b: bgm) {
+			  writer.write(b.to_string() + "\n");
+			}
+			writer.close();		
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		Bigrams most = bgm.get(0);
 		System.out.println("The total number of bigrams: " + total);
 		System.out.println("The most common bigram: (" + most.first + ", " + most.second + ")");
@@ -70,6 +80,9 @@ public class BigramStat {
 		public int compareTo(Bigrams tmp) {
 			//descending order
 			return tmp.count - this.count;
+		}
+		public String to_string() {
+			return first + " " + second + " " + count;
 		}
 	}
 }
