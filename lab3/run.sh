@@ -2,14 +2,12 @@
 
 clear
 
-
 #############################################################################
 # Build an image from Dockerfile
 #############################################################################
 printf "\n\n================================================================"
 printf "\n>>Start to build the image...\n\n"
 docker build -t myhadoop .
-
 
 #############################################################################
 # Task 1: start up a Hadoop cluster 
@@ -131,5 +129,3 @@ printf "\n>>Start to clear up...\n\n"
 rm *.class
 docker rm -f $(docker ps -a -q) && \
 docker rmi myhadoop
-
-
