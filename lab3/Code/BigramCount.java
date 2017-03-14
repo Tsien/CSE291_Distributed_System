@@ -47,8 +47,9 @@ public class BigramCount {
         prev = itr.nextToken();
         while (itr.hasMoreTokens()) {
           cur = itr.nextToken();
-          bigrams.set(prev + ", " + cur);
+          bigrams.set(prev + " " + cur);
           context.write(bigrams, one);
+          prev = cur;
         }             
       }
     }
