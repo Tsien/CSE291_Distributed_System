@@ -20,7 +20,7 @@ import java.util.Scanner;
 
 public class BigramStat {
 	public static void main(String[] args) {
-		String file = "../Data/bi_result.txt";	
+		String file = "../Data/result.txt";	
 		int total = 0;
 	    Path path = Paths.get(file);
 	    List<String> lines = null;
@@ -42,11 +42,19 @@ public class BigramStat {
 		Bigrams most = bgm.get(0);
 		System.out.println("The total number of bigrams: " + total);
 		System.out.println("The most common bigram: (" + most.first + ", " + most.second + ")");
-		System.out.println("The number of bigrams required to add up to 10% of all bigrams: " + getAdd(most.count, total));
+		System.out.println("The number of bigrams required to add up to 10% of all bigrams: " + getAdd(bgm, total));
 	}	
 	
-	public static int getAdd(int count, int total) {
-		return (int) Math.ceil((total - 10.0 * count) * 1.0 / 9.0);
+	public static int getAdd(List<Bigrams> bgm, int total) {
+		int res = 0, count = 0;
+		for (Bigrams b : bgm) {
+			count += b.count;
+			++res;
+			if (10 * count >= total) {
+				break;
+			}
+		}
+		return res;
 	}
 	public static class Bigrams implements Comparable<Bigrams>{
 		int count;
