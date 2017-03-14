@@ -1,10 +1,5 @@
 #!/bin/bash
 
-#============================================================================
-# Hadoop Configuration 
-NumDataNodes = 4
-
-
 clear
 
 
@@ -25,9 +20,6 @@ printf "\n>>Start to build a Hadoop cluster ...\n\n"
 #============================================================================
 # 	1. Starting the NameNode
 
-#docker run -itd --name hdfs-namenode \
-#    -h hdfs-namenode -p 50070:50070 \
-#    myhadoop /bin/bash
 docker run -d --name hdfs-namenode \
     -h hdfs-namenode -p 50070:50070 \
     myhadoop hdfs namenode 
@@ -39,7 +31,7 @@ printf "\n>>Succeed to start The NameNode ...\n\n"
 for (( i = 1; i <= 4; i++ )); do
 	#statements
 	docker run -d --name hdfs-datanode"$i" \
-	    -h hdfs-datanode1 -p 5007"$i":5007"$i" \
+	    -h hdfs-datanode"$i" -p 5007"$i":5007"$i" \
 	    --link=hdfs-namenode:hdfs-namenode \
 	    myhadoop hdfs datanode 	
 	printf "\n>>Succeed to start The DataNode$i ...\n\n"
