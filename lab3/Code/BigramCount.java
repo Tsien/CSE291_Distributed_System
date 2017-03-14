@@ -43,12 +43,14 @@ public class BigramCount {
     public void map(Object key, Text value, Context context
                     ) throws IOException, InterruptedException {
       StringTokenizer itr = new StringTokenizer(value.toString());
-      prev = itr.nextToken();
-      while (itr.hasMoreTokens()) {
-        cur = itr.nextToken();
-        bigrams.set(prev + ", " + cur);
-        context.write(bigrams, one);
-      }     
+      if (itr.hasMoreTokens()) {
+        prev = itr.nextToken();
+        while (itr.hasMoreTokens()) {
+          cur = itr.nextToken();
+          bigrams.set(prev + ", " + cur);
+          context.write(bigrams, one);
+        }             
+      }
     }
   }
 

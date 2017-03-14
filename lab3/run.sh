@@ -108,7 +108,7 @@ docker run --rm \
         --link yarn:yarn \
         --link=hdfs-namenode:hdfs-namenode \
         myhadoop \
-        hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0.jar wordcount  /text.txt /result
+        hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/bigrams.jar BigramCount  /text.txt /bi_result
 
 #=========================================================================
 #	2. Check the result
@@ -118,7 +118,7 @@ docker run --rm --link=hdfs-namenode:hdfs-namenode \
         --link=hdfs-datanode1:hdfs-datanode3 \
         --link=hdfs-datanode1:hdfs-datanode4 \
         myhadoop \
-        hadoop fs -cat /result/\*
+        hadoop fs -cat /bi_result/\*
 
 #=========================================================================
 #	3. Output stats
@@ -131,7 +131,7 @@ docker run --rm --link=hdfs-namenode:hdfs-namenode \
 
 printf "\n\n============================================================="
 printf "\n>>Start to clear up...\n\n"
-docker rm -f $(docker ps -a -q)
+docker rm -f $(docker ps -a -q) && \
 docker rmi myhadoop
 
 
