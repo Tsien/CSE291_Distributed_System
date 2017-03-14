@@ -5,7 +5,7 @@ Q: How to run scripts?
 A: $./run.sh
 
 Q: Where is the output file of BigramCount.java?
-A: path = ./Data/bi_result.txt
+A: path = ./Data/result.txt
 
 
 

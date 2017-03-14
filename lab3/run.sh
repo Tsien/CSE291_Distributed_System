@@ -127,7 +127,7 @@ docker run --rm --link=hdfs-namenode:hdfs-namenode \
 #============================================================================
 #	3. Output stats
 printf "\n\n================================================================\n"
-cat ./Data/bi_result.txt
+cat ./Data/result.txt
 printf "\n-----------\n"
 cd ./Code
 javac BigramStat.java
