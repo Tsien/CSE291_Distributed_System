@@ -122,7 +122,7 @@ docker run --rm --link=hdfs-namenode:hdfs-namenode \
         --link=hdfs-datanode1:hdfs-datanode3 \
         --link=hdfs-datanode1:hdfs-datanode4 \
         myhadoop \
-        hadoop fs -cat /bi_result/\* > ./Data/bi_result.txt 
+        hadoop fs -cat /bi_result/\* > ./Data/result.txt 
 
 #============================================================================
 #	3. Output stats
