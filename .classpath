@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="lab0/client"/>
+	<classpathentry kind="src" path="lab0/server"/>
+	<classpathentry excluding="unit/" kind="src" path="lab1/project1"/>
+	<classpathentry kind="src" path="lab1/project1/unit"/>
+	<classpathentry excluding="fuse/|fuse/java/src/" kind="src" path="lab2"/>
+	<classpathentry excluding="java/src/" kind="src" path="lab2/fuse"/>
+	<classpathentry kind="src" path="lab2/fuse/java/src"/>
+	<classpathentry kind="src" path="lab3/Code"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
